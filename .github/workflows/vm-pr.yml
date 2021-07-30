@@ -38,16 +38,15 @@ jobs:
       - run: npm run build:vm
         working-directory: ${{github.workspace}}
 
-      - run: npm run coverage
-      
+      - run: npm run lint
+      - run: npm run coverage:API
+
       - uses: codecov/codecov-action@v1
         with:
           file: ${{ env.cwd }}/coverage/lcov.info
           flags: vm
 
-      - run: npm run test:API
       - run: npm run test:API:browser
-      - run: npm run lint
   
   vm-state:
     runs-on: ubuntu-latest
@@ -85,7 +84,12 @@ jobs:
       - run: npm run build:vm
         working-directory: ${{github.workspace}}
 
-      - run: npm run test:state -- --fork=${{ matrix.fork }} --verify-test-amount-alltests
+      - run: npm run coverage -- npm run test:state -- --fork=${{ matrix.fork }} --verify-test-amount-alltests
+
+      - uses: codecov/codecov-action@v1
+        with:
+          file: ${{ env.cwd }}/coverage/lcov.info
+          flags: vm
 
   vm-state-extended:
     if: contains(join(github.event.pull_request.labels.*.name, ' '), 'Test all hardforks')
@@ -130,7 +134,12 @@ jobs:
       - run: npm run build:vm
         working-directory: ${{github.workspace}}
 
-      - run: npm run test:state -- --fork=${{ matrix.fork }} --verify-test-amount-alltests
+      - run: npm run coverage -- npm run test:state -- --fork=${{ matrix.fork }} --verify-test-amount-alltests
+
+      - uses: codecov/codecov-action@v1
+        with:
+          file: ${{ env.cwd }}/coverage/lcov.info
+          flags: vm
 
   vm-blockchain:
     runs-on: ubuntu-latest
@@ -173,7 +182,12 @@ jobs:
       - run: npm run build:vm
         working-directory: ${{github.workspace}}
 
-      - run: npm run test:blockchain -- ${{ matrix.args }}
+      - run: npm run coverage -- npm run test:blockchain -- ${{ matrix.args }}
+
+      - uses: codecov/codecov-action@v1
+        with:
+          file: ${{ env.cwd }}/coverage/lcov.info
+          flags: vm
 
   vm-blockchain-extended:
     if: contains(join(github.event.pull_request.labels.*.name, ' '), 'Test all hardforks')
@@ -219,7 +233,12 @@ jobs:
       - run: npm run build:vm
         working-directory: ${{github.workspace}}
 
-      - run: npm run test:blockchain -- ${{ matrix.args }}
+      - run: npm run coverage -- npm run test:blockchain -- ${{ matrix.args }}
+
+      - uses: codecov/codecov-action@v1
+        with:
+          file: ${{ env.cwd }}/coverage/lcov.info
+          flags: vm
 
   vm-benchmarks:
     runs-on: ubuntu-latest
