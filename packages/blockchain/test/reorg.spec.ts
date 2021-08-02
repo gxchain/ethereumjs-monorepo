@@ -6,6 +6,7 @@ import Blockchain from '../src'
 import { CLIQUE_NONCE_AUTH } from '../src/clique'
 import { generateConsecutiveBlock } from './util'
 
+/*
 const genesis = Block.fromBlockData({
   header: {
     number: new BN(0),
@@ -236,3 +237,4 @@ tape('reorg tests', (t) => {
     }
   )
 })
+*/
