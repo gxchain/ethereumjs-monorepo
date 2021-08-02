@@ -1,4 +1,4 @@
-import { TransactionFactory, TypedTransaction, TxData } from '@ethereumjs/tx'
+import { TransactionFactory, TypedTransaction, TxData } from '@gxchain2-ethereumjs/tx'
 import { toBuffer, setLengthLeft } from 'ethereumjs-util'
 import { Block, BlockOptions } from './index'
 import { numberToHex } from './helpers'

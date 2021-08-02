@@ -160,7 +160,7 @@ export default class Common extends EventEmitter {
    *
    * Note that these supported custom chains only provide some base parameters (usually the chain and
    * network ID and a name) and can only be used for selected use cases (e.g. sending a tx with
-   * the `@ethereumjs/tx` library to a Layer-2 chain).
+   * the `@gxchain2-ethereumjs/tx` library to a Layer-2 chain).
    *
    * @param chainParamsOrName Custom parameter dict (`name` will default to `custom-chain`) or string with name of a supported custom chain
    * @param opts Custom chain options to set the {@link CustomCommonOpts.baseChain}, selected {@link CustomCommonOpts.hardfork} and others
@@ -443,7 +443,7 @@ export default class Common extends EventEmitter {
       }
       if (EIPs[eip].requiredEIPs) {
         // eslint-disable-next-line prettier/prettier
-        (<number[]>EIPs[eip].requiredEIPs).forEach((elem: number) => {
+        ;(<number[]>EIPs[eip].requiredEIPs).forEach((elem: number) => {
           if (!(eips.includes(elem) || this.isActivatedEIP(elem))) {
             throw new Error(`${eip} requires EIP ${elem}, but is not included in the EIP list`)
           }
@@ -490,7 +490,8 @@ export default class Common extends EventEmitter {
     let value = null
     for (const hfChanges of HARDFORK_CHANGES) {
       // EIP-referencing HF file (e.g. berlin.json)
-      if (hfChanges[1].hasOwnProperty('eips')) { // eslint-disable-line
+      if (hfChanges[1].hasOwnProperty('eips')) {
+        // eslint-disable-line
         const hfEIPs = hfChanges[1]['eips']
         for (const eip of hfEIPs) {
           const valueEIP = this.paramByEIP(topic, name, eip)

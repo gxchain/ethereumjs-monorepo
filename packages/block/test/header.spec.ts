@@ -1,6 +1,6 @@
 import tape from 'tape'
 import { Address, BN, zeros, KECCAK256_RLP, KECCAK256_RLP_ARRAY, rlp } from 'ethereumjs-util'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@gxchain2-ethereumjs/common'
 import { BlockHeader } from '../src/header'
 import { Block } from '../src'
 import { Mockchain } from './mockchain'

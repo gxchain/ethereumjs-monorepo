@@ -1,7 +1,7 @@
 import tape from 'tape'
 import VM from '../../../src'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import { Transaction } from '@ethereumjs/tx'
+import Common, { Chain, Hardfork } from '@gxchain2-ethereumjs/common'
+import { Transaction } from '@gxchain2-ethereumjs/tx'
 import { InterpreterStep } from '../../../src/evm/interpreter'
 import { Address } from 'ethereumjs-util'
 

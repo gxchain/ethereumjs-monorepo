@@ -1,6 +1,6 @@
 import tape from 'tape'
 import { Address, BN, keccak256, padToEven } from 'ethereumjs-util'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@gxchain2-ethereumjs/common'
 import VM from '../../src'
 
 // Non-protected Create2Address generator. Does not check if buffers have the right padding.

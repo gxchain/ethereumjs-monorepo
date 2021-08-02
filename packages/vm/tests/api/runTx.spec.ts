@@ -1,8 +1,12 @@
 import tape from 'tape'
 import { Account, Address, BN, MAX_INTEGER } from 'ethereumjs-util'
-import { Block } from '@ethereumjs/block'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import { Transaction, TransactionFactory, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
+import { Block } from '@gxchain2-ethereumjs/block'
+import Common, { Chain, Hardfork } from '@gxchain2-ethereumjs/common'
+import {
+  Transaction,
+  TransactionFactory,
+  FeeMarketEIP1559Transaction,
+} from '@gxchain2-ethereumjs/tx'
 import VM from '../../src'
 import { createAccount, getTransaction } from './utils'
 

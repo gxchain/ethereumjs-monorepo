@@ -1,12 +1,12 @@
 import tape from 'tape'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@gxchain2-ethereumjs/common'
 import {
   AccessListEIP2930Transaction,
   AccessListEIP2930TxData,
   Transaction,
   TxData,
-} from '@ethereumjs/tx'
-import { Block, BlockData } from '@ethereumjs/block'
+} from '@gxchain2-ethereumjs/tx'
+import { Block, BlockData } from '@gxchain2-ethereumjs/block'
 
 tape('[Types]', function (t) {
   t.test('should ensure that the actual objects can be safely used as their data types', (st) => {

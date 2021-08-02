@@ -1,7 +1,7 @@
 import tape from 'tape'
 import { toBuffer, bufferToHex } from 'ethereumjs-util'
-import { Transaction } from '@ethereumjs/tx'
-import { Block } from '@ethereumjs/block'
+import { Transaction } from '@gxchain2-ethereumjs/tx'
+import { Block } from '@gxchain2-ethereumjs/block'
 import VM from '../../src/index'
 
 tape('VM events', (t) => {

@@ -1,8 +1,0 @@
-{
-  "extends": "../../config/tsconfig.prod.json",
-  "compilerOptions": {
-    "outDir": "./dist",
-    "lib": ["dom"],
-  },
-  "include": ["src/**/*.ts"]
-}

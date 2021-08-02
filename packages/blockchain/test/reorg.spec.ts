@@ -1,5 +1,5 @@
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import { Block } from '@ethereumjs/block'
+import Common, { Chain, Hardfork } from '@gxchain2-ethereumjs/common'
+import { Block } from '@gxchain2-ethereumjs/block'
 import { Address, BN } from 'ethereumjs-util'
 import tape from 'tape'
 import Blockchain from '../src'

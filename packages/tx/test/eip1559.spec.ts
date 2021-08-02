@@ -1,4 +1,4 @@
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@gxchain2-ethereumjs/common'
 import { BN, rlp, TWO_POW256 } from 'ethereumjs-util'
 import tape from 'tape'
 import { FeeMarketEIP1559Transaction } from '../src'

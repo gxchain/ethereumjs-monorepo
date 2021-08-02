@@ -1,4 +1,4 @@
-import Common from '@ethereumjs/common'
+import Common from '@gxchain2-ethereumjs/common'
 import { BN, keccak256, setLengthRight, setLengthLeft } from 'ethereumjs-util'
 import { ERROR, VmError } from './../../exceptions'
 import { RunState } from './../interpreter'

@@ -1,6 +1,11 @@
 import { AddressLike, BNLike, BufferLike } from 'ethereumjs-util'
-import Common from '@ethereumjs/common'
-import { TxData, JsonTx, AccessListEIP2930TxData, FeeMarketEIP1559TxData } from '@ethereumjs/tx'
+import Common from '@gxchain2-ethereumjs/common'
+import {
+  TxData,
+  JsonTx,
+  AccessListEIP2930TxData,
+  FeeMarketEIP1559TxData,
+} from '@gxchain2-ethereumjs/tx'
 import { Block } from './block'
 import { BlockHeader } from './header'
 

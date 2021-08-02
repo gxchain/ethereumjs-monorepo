@@ -1,7 +1,7 @@
 import * as tape from 'tape'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import { Account, BN, toBuffer } from 'ethereumjs-util'
-import Common, { Chain } from '@ethereumjs/common'
+import Common, { Chain } from '@gxchain2-ethereumjs/common'
 import { setupPreConditions, makeTx, makeBlockFromEnv } from './util'
 import { InterpreterStep } from '../src/evm/interpreter'
 

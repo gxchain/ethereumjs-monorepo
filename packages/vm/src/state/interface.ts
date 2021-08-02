@@ -1,5 +1,5 @@
 import { Account, Address } from 'ethereumjs-util'
-import { AccessList } from '@ethereumjs/tx'
+import { AccessList } from '@gxchain2-ethereumjs/tx'
 
 /**
  * Storage values of an account

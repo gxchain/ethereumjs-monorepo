@@ -1,6 +1,6 @@
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import { BN, rlp, keccak256, KECCAK256_RLP } from 'ethereumjs-util'
-import Common from '@ethereumjs/common'
+import Common from '@gxchain2-ethereumjs/common'
 import {
   TransactionFactory,
   TypedTransaction,
@@ -8,7 +8,7 @@ import {
   FeeMarketEIP1559Transaction,
   Transaction,
   Capability,
-} from '@ethereumjs/tx'
+} from '@gxchain2-ethereumjs/tx'
 import { BlockHeader } from './header'
 import { BlockData, BlockOptions, JsonBlock, BlockBuffer, Blockchain } from './types'
 
@@ -263,7 +263,7 @@ export class Block {
    *
    * Throws if invalid.
    *
-   * @param blockchain - validate against an @ethereumjs/blockchain
+   * @param blockchain - validate against an @gxchain2-ethereumjs/blockchain
    * @param onlyHeader - if should only validate the header (skips validating txTrie and unclesHash) (default: false)
    */
   async validate(blockchain: Blockchain, onlyHeader: boolean = false): Promise<void> {
@@ -321,7 +321,7 @@ export class Block {
    * Header has at most 2 uncles.
    * Header does not count an uncle twice.
    *
-   * @param blockchain - additionally validate against an @ethereumjs/blockchain instance
+   * @param blockchain - additionally validate against an @gxchain2-ethereumjs/blockchain instance
    */
   async validateUncles(blockchain: Blockchain): Promise<void> {
     if (this.isGenesis()) {

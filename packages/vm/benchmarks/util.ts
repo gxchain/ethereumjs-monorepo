@@ -1,6 +1,6 @@
 import { Account, Address, toBuffer, bufferToInt, BN } from 'ethereumjs-util'
-import Common from '@ethereumjs/common'
-import { Block } from '@ethereumjs/block'
+import Common from '@gxchain2-ethereumjs/common'
+import { Block } from '@gxchain2-ethereumjs/block'
 import { StateManager, DefaultStateManager } from '../dist/state'
 import { RunBlockResult } from '../dist/runBlock'
 import Mockchain from './mockchain'
@@ -24,7 +24,7 @@ export async function getPreState(
   pre: {
     [k: string]: StateTestPreAccount
   },
-  common: Common,
+  common: Common
 ): Promise<StateManager> {
   const state = new DefaultStateManager({ common })
   await state.checkpoint()

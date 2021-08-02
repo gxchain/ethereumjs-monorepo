@@ -2,12 +2,12 @@ import { debug as createDebugLogger } from 'debug'
 import { encode } from 'rlp'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import { Account, Address, BN, intToBuffer } from 'ethereumjs-util'
-import { Block } from '@ethereumjs/block'
+import { Block } from '@gxchain2-ethereumjs/block'
 import VM from './index'
 import Bloom from './bloom'
 import { StateManager } from './state'
 import { short } from './evm/opcodes'
-import { Capability, TypedTransaction } from '@ethereumjs/tx'
+import { Capability, TypedTransaction } from '@gxchain2-ethereumjs/tx'
 import type { RunTxResult } from './runTx'
 import type { TxReceipt } from './types'
 import * as DAOConfig from './config/dao_fork_accounts_config.json'
@@ -30,7 +30,7 @@ const DAORefundContract = DAOConfig.DAORefundContract
  */
 export interface RunBlockOpts {
   /**
-   * The @ethereumjs/block to process
+   * The @gxchain2-ethereumjs/block to process
    */
   block: Block
   /**

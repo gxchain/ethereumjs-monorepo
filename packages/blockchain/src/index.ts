@@ -1,9 +1,8 @@
 import { debug as createDebugLogger } from 'debug'
 import Semaphore from 'semaphore-async-await'
 import { Address, BN, rlp } from 'ethereumjs-util'
-import { Block, BlockData, BlockHeader } from '@ethereumjs/block'
-import Ethash from '@ethereumjs/ethash'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import { Block, BlockData, BlockHeader } from '@gxchain2-ethereumjs/block'
+import Common, { Chain, Hardfork } from '@gxchain2-ethereumjs/common'
 import { DBManager } from './db/manager'
 import { DBOp, DBSetBlockOrHeader, DBSetTD, DBSetHashToNumber, DBSaveLookups } from './db/helpers'
 import { DBTarget } from './db/operation'
@@ -145,8 +144,6 @@ export default class Blockchain implements BlockchainInterface {
   private readonly _validateConsensus: boolean
   private readonly _validateBlocks: boolean
 
-  _ethash?: Ethash
-
   /**
    * Keep signer history data (signer states and votes)
    * for all block numbers >= HEAD_BLOCK - CLIQUE_SIGNER_HISTORY_BLOCK_LIMIT
@@ -265,11 +262,7 @@ export default class Blockchain implements BlockchainInterface {
 
     if (this._validateConsensus) {
       if (this._common.consensusType() === 'pow') {
-        if (this._common.consensusAlgorithm() !== 'ethash') {
-          throw new Error('consensus validation only supported for pow ethash algorithm')
-        } else {
-          this._ethash = new Ethash(this.db)
-        }
+        throw new Error('unsupport pow consensus')
       }
       if (this._common.consensusType() === 'poa') {
         if (this._common.consensusAlgorithm() !== 'clique') {
@@ -902,13 +895,6 @@ export default class Blockchain implements BlockchainInterface {
       }
 
       if (this._validateConsensus) {
-        if (this._common.consensusAlgorithm() === 'ethash') {
-          const valid = await this._ethash!.verifyPOW(block)
-          if (!valid) {
-            throw new Error('invalid POW')
-          }
-        }
-
         if (this._common.consensusAlgorithm() === 'clique') {
           const valid = header.cliqueVerifySignature(this.cliqueActiveSigners())
           if (!valid) {

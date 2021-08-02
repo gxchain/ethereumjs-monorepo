@@ -6,8 +6,8 @@ import {
   BlockBuffer,
   BlockHeaderBuffer,
   BlockBodyBuffer,
-} from '@ethereumjs/block'
-import Common from '@ethereumjs/common'
+} from '@gxchain2-ethereumjs/block'
+import Common from '@gxchain2-ethereumjs/common'
 import { CliqueLatestSignerStates, CliqueLatestVotes, CliqueLatestBlockSigners } from '../clique'
 import Cache from './cache'
 import { DatabaseKey, DBOp, DBTarget, DBOpData } from './operation'

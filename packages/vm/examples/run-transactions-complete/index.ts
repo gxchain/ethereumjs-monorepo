@@ -1,5 +1,5 @@
 import { Address, Account, BN, toBuffer, pubToAddress } from 'ethereumjs-util'
-import { Transaction, TxData } from '@ethereumjs/tx'
+import { Transaction, TxData } from '@gxchain2-ethereumjs/tx'
 import VM from '../..'
 
 async function main() {

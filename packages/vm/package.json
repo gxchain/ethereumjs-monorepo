@@ -1,5 +1,5 @@
 {
-  "name": "@ethereumjs/vm",
+  "name": "@gxchain2-ethereumjs/vm",
   "version": "5.5.0",
   "description": "An Ethereum VM implementation",
   "license": "MPL-2.0",
@@ -46,10 +46,10 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/block": "^3.4.0",
-    "@ethereumjs/blockchain": "^5.4.0",
-    "@ethereumjs/common": "^2.4.0",
-    "@ethereumjs/tx": "^3.3.0",
+    "@gxchain2-ethereumjs/block": "^3.4.0",
+    "@gxchain2-ethereumjs/blockchain": "^5.4.0",
+    "@gxchain2-ethereumjs/common": "^2.4.0",
+    "@gxchain2-ethereumjs/tx": "^3.3.0",
     "merkle-patricia-tree": "^4.2.0",
     "async-eventemitter": "^0.2.4",
     "core-js-pure": "^3.0.1",

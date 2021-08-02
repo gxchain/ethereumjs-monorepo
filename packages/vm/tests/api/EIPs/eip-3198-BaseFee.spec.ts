@@ -1,9 +1,9 @@
 import tape from 'tape'
 import { Address, BN, privateToAddress } from 'ethereumjs-util'
 import VM from '../../../src'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import { FeeMarketEIP1559Transaction, TypedTransaction } from '@ethereumjs/tx'
-import { Block } from '@ethereumjs/block'
+import Common, { Chain, Hardfork } from '@gxchain2-ethereumjs/common'
+import { FeeMarketEIP1559Transaction, TypedTransaction } from '@gxchain2-ethereumjs/tx'
+import { Block } from '@gxchain2-ethereumjs/block'
 import { InterpreterStep } from '../../../src/evm/interpreter'
 
 const GWEI = new BN('1000000000')

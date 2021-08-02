@@ -1,5 +1,5 @@
 import { Address } from 'ethereumjs-util'
-import Common from '@ethereumjs/common'
+import Common from '@gxchain2-ethereumjs/common'
 import { PrecompileInput, PrecompileFunc } from './types'
 import { default as p1 } from './01-ecrecover'
 import { default as p2 } from './02-sha256'

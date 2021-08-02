@@ -1,10 +1,10 @@
 import tape from 'tape'
 import { Address, BN } from 'ethereumjs-util'
 import VM from '../../../src'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@gxchain2-ethereumjs/common'
 import { InterpreterStep } from '../../../src/evm/interpreter'
 import { EIP2929StateManager } from '../../../src/state/interface'
-import { Transaction } from '@ethereumjs/tx'
+import { Transaction } from '@gxchain2-ethereumjs/tx'
 
 const address = new Address(Buffer.from('11'.repeat(20), 'hex'))
 const pkey = Buffer.from('20'.repeat(32), 'hex')

@@ -1,4 +1,4 @@
-import Common from '@ethereumjs/common'
+import Common from '@gxchain2-ethereumjs/common'
 import {
   Address,
   BN,

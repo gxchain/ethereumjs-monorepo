@@ -1,10 +1,10 @@
 import tape from 'tape'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@gxchain2-ethereumjs/common'
 import { BlockHeader } from '../src/header'
 import { BN } from 'ethereumjs-util'
 import { Mockchain } from './mockchain'
 import { Block } from '../src/block'
-import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
+import { FeeMarketEIP1559Transaction } from '@gxchain2-ethereumjs/tx'
 
 // Test data from Besu (retrieved via Discord)
 // Older version at https://github.com/abdelhamidbakhta/besu/blob/bf54b6c0b40d3015fc85ff9b078fbc26592d80c0/ethereum/core/src/test/resources/org/hyperledger/besu/ethereum/core/fees/basefee-test.json

@@ -1,5 +1,5 @@
 import { Address } from 'ethereumjs-util'
-import Common from '@ethereumjs/common'
+import Common from '@gxchain2-ethereumjs/common'
 import { Transaction } from '../src'
 
 // In this example we create a transaction for a custom network.
@@ -14,7 +14,7 @@ const customCommon = Common.forCustomChain(
     networkId: 123,
     chainId: 2134,
   },
-  'petersburg',
+  'petersburg'
 )
 
 // We pass our custom Common object whenever we create a transaction
@@ -26,7 +26,7 @@ const tx = Transaction.fromTxData(
     gasLimit: 1000000000,
     value: 100000,
   },
-  opts,
+  opts
 )
 
 // Once we created the transaction using the custom Common object, we can use it as a normal tx.
@@ -34,7 +34,7 @@ const tx = Transaction.fromTxData(
 // Here we sign it and validate its signature
 const privateKey = Buffer.from(
   'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
-  'hex',
+  'hex'
 )
 
 const signedTx = tx.sign(privateKey)

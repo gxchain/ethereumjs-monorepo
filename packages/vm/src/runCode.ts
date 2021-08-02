@@ -12,7 +12,7 @@ item length then you must use `utils.pad(<item>, 32)` first.
 
 */
 import { Address, BN } from 'ethereumjs-util'
-import { Block } from '@ethereumjs/block'
+import { Block } from '@gxchain2-ethereumjs/block'
 import VM from './index'
 import TxContext from './evm/txContext'
 import Message from './evm/message'
@@ -23,7 +23,7 @@ import { default as EVM, ExecResult } from './evm/evm'
  */
 export interface RunCodeOpts {
   /**
-   * The `@ethereumjs/block` the `tx` belongs to. If omitted a default blank block will be used.
+   * The `@gxchain2-ethereumjs/block` the `tx` belongs to. If omitted a default blank block will be used.
    */
   block?: Block
   evm?: EVM

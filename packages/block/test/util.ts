@@ -1,4 +1,4 @@
-import Common, { Chain } from '@ethereumjs/common'
+import Common, { Chain } from '@gxchain2-ethereumjs/common'
 import { BN, rlp, keccak256 } from 'ethereumjs-util'
 import { Block, BlockHeader } from '../src'
 

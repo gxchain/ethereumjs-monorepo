@@ -1,10 +1,10 @@
 import { Account, Address, BN } from 'ethereumjs-util'
-import Blockchain from '@ethereumjs/blockchain'
+import Blockchain from '@gxchain2-ethereumjs/blockchain'
 import VM from '../../src/index'
 import { VMOpts } from '../../src'
-import { Block } from '@ethereumjs/block'
-import { TransactionFactory } from '@ethereumjs/tx'
-import Common from '@ethereumjs/common'
+import { Block } from '@gxchain2-ethereumjs/block'
+import { TransactionFactory } from '@gxchain2-ethereumjs/tx'
+import Common from '@gxchain2-ethereumjs/common'
 
 const level = require('level-mem')
 

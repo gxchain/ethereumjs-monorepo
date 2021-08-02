@@ -10,7 +10,7 @@ import {
 } from 'ethereumjs-util'
 import { TxOptions, TxData, JsonTx, N_DIV_2, TxValuesArray, Capability } from './types'
 import { BaseTransaction } from './baseTransaction'
-import Common from '@ethereumjs/common'
+import Common from '@gxchain2-ethereumjs/common'
 
 const TRANSACTION_TYPE = 0
 

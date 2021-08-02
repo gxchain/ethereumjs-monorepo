@@ -1,5 +1,5 @@
 import { BN } from 'ethereumjs-util'
-import Common from '@ethereumjs/common'
+import Common from '@gxchain2-ethereumjs/common'
 import { ExecResult } from '../evm'
 import VM from '../../index'
 

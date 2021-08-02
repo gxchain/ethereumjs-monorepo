@@ -1,6 +1,6 @@
 import { debug as createDebugLogger } from 'debug'
 import { Address, BN, toBuffer } from 'ethereumjs-util'
-import { Block } from '@ethereumjs/block'
+import { Block } from '@gxchain2-ethereumjs/block'
 import {
   AccessList,
   AccessListItem,
@@ -9,7 +9,7 @@ import {
   Transaction,
   TypedTransaction,
   Capability,
-} from '@ethereumjs/tx'
+} from '@gxchain2-ethereumjs/tx'
 import VM from './index'
 import Bloom from './bloom'
 import { default as EVM, EVMResult } from './evm/evm'
@@ -33,12 +33,12 @@ const debugGas = createDebugLogger('vm:tx:gas')
  */
 export interface RunTxOpts {
   /**
-   * The `@ethereumjs/block` the `tx` belongs to.
+   * The `@gxchain2-ethereumjs/block` the `tx` belongs to.
    * If omitted, a default blank block will be used.
    */
   block?: Block
   /**
-   * An `@ethereumjs/tx` to run
+   * An `@gxchain2-ethereumjs/tx` to run
    */
   tx: TypedTransaction
   /**

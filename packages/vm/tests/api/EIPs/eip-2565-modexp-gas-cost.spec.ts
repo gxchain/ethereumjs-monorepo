@@ -1,6 +1,6 @@
 import tape from 'tape'
 import { Address, BN } from 'ethereumjs-util'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@gxchain2-ethereumjs/common'
 import VM from '../../../src'
 
 // See https://github.com/holiman/go-ethereum/blob/2c99023b68c573ba24a5b01db13e000bd9b82417/core/vm/testdata/precompiles/modexp_eip2565.json

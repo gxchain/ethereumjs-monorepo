@@ -13,9 +13,9 @@ import {
   FeeMarketEIP1559Transaction,
   Transaction,
   TxOptions,
-} from '@ethereumjs/tx'
-import { Block, BlockHeader, BlockOptions } from '@ethereumjs/block'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+} from '@gxchain2-ethereumjs/tx'
+import { Block, BlockHeader, BlockOptions } from '@gxchain2-ethereumjs/block'
+import Common, { Chain, Hardfork } from '@gxchain2-ethereumjs/common'
 
 export function dumpState(state: any, cb: Function) {
   function readAccounts(state: any) {
@@ -100,7 +100,7 @@ const format = (exports.format = function (
 /**
  * Make a tx using JSON from tests repo
  * @param {Object} txData The tx object from tests repo
- * @param {TxOptions} opts Tx opts that can include an @ethereumjs/common object
+ * @param {TxOptions} opts Tx opts that can include an @gxchain2-ethereumjs/common object
  * @returns {Transaction} Transaction to be passed to VM.runTx function
  */
 export function makeTx(txData: any, opts?: TxOptions) {

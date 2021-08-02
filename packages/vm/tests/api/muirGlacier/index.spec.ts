@@ -1,6 +1,6 @@
 import tape from 'tape'
 import { KECCAK256_RLP } from 'ethereumjs-util'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@gxchain2-ethereumjs/common'
 import VM from '../../../src'
 
 tape('General MuirGlacier VM tests', (t) => {

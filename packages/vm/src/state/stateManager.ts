@@ -11,13 +11,13 @@ import {
   unpadBuffer,
 } from 'ethereumjs-util'
 import { encode, decode } from 'rlp'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import { genesisStateByName } from '@ethereumjs/common/dist/genesisStates'
+import Common, { Chain, Hardfork } from '@gxchain2-ethereumjs/common'
+import { genesisStateByName } from '@gxchain2-ethereumjs/common/dist/genesisStates'
 import { AccountFields, StateManager, StorageDump } from './interface'
 import Cache from './cache'
 import { getActivePrecompiles, ripemdPrecompileAddress } from '../evm/precompiles'
 import { short } from '../evm/opcodes'
-import { AccessList, AccessListItem } from '@ethereumjs/tx'
+import { AccessList, AccessListItem } from '@gxchain2-ethereumjs/tx'
 
 const debug = createDebugLogger('vm:state')
 
@@ -716,7 +716,7 @@ export default class DefaultStateManager implements StateManager {
    * @param addressesRemoved - List of addresses to be removed from the final list
    * @param addressesOnlyStorage - List of addresses only to be added in case of present storage slots
    *
-   * @returns - an [@ethereumjs/tx](https://github.com/ethereumjs/ethereumjs-monorepo/packages/tx) `AccessList`
+   * @returns - an [@gxchain2-ethereumjs/tx](https://github.com/ethereumjs/ethereumjs-monorepo/packages/tx) `AccessList`
    */
   generateAccessList(
     addressesRemoved: Address[] = [],

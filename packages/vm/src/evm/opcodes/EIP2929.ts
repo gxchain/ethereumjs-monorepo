@@ -1,4 +1,4 @@
-import Common from '@ethereumjs/common'
+import Common from '@gxchain2-ethereumjs/common'
 import { Address, BN } from 'ethereumjs-util'
 import { EIP2929StateManager } from '../../state/interface'
 import { RunState } from './../interpreter'
@@ -27,7 +27,7 @@ export function accessAddressEIP2929(
   // Cold
   if (!(<EIP2929StateManager>runState.stateManager).isWarmedAddress(addressStr)) {
     // eslint-disable-next-line prettier/prettier
-    (<EIP2929StateManager>runState.stateManager).addWarmedAddress(addressStr)
+    ;(<EIP2929StateManager>runState.stateManager).addWarmedAddress(addressStr)
 
     // CREATE, CREATE2 opcodes have the address warmed for free.
     // selfdestruct beneficiary address reads are charged an *additional* cold access
@@ -69,7 +69,7 @@ export function accessStorageEIP2929(
   // Cold (SLOAD and SSTORE)
   if (slotIsCold) {
     // eslint-disable-next-line prettier/prettier
-    (<EIP2929StateManager>runState.stateManager).addWarmedStorage(address, key)
+    ;(<EIP2929StateManager>runState.stateManager).addWarmedStorage(address, key)
     runState.eei.useGas(new BN(common.param('gasPrices', 'coldsload')), 'EIP-2929 -> coldsload')
   } else if (!isSstore) {
     runState.eei.useGas(

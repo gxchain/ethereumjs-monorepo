@@ -3,7 +3,7 @@ import { join } from 'path'
 import { readFileSync } from 'fs'
 import { defaultAbiCoder as AbiCoder, Interface } from '@ethersproject/abi'
 import { Account, Address, BN } from 'ethereumjs-util'
-import { Transaction } from '@ethereumjs/tx'
+import { Transaction } from '@gxchain2-ethereumjs/tx'
 import VM from '../../dist'
 const solc = require('solc')
 
@@ -83,7 +83,7 @@ async function deployContract(
   vm: VM,
   senderPrivateKey: Buffer,
   deploymentBytecode: Buffer,
-  greeting: string,
+  greeting: string
 ): Promise<Address> {
   // Contracts are deployed by sending their deployment bytecode to the address 0
   // The contract params should be abi-encoded and appended to the deployment bytecode.
@@ -111,7 +111,7 @@ async function setGreeting(
   vm: VM,
   senderPrivateKey: Buffer,
   contractAddress: Address,
-  greeting: string,
+  greeting: string
 ) {
   const params = AbiCoder.encode(['string'], [greeting])
   const sigHash = new Interface(['function setGreeting(string)']).getSighash('setGreeting')
@@ -154,7 +154,7 @@ async function getGreeting(vm: VM, contractAddress: Address, caller: Address) {
 async function main() {
   const accountPk = Buffer.from(
     'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
-    'hex',
+    'hex'
   )
 
   const accountAddress = Address.fromPrivateKey(accountPk)

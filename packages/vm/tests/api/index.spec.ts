@@ -1,7 +1,7 @@
 import tape from 'tape'
 import { KECCAK256_RLP } from 'ethereumjs-util'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@gxchain2-ethereumjs/common'
 import { DefaultStateManager } from '../../src/state'
 import VM from '../../src'
 import { isRunningInKarma } from '../util'

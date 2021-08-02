@@ -1,6 +1,6 @@
 import tape from 'tape'
 import { Address, BN } from 'ethereumjs-util'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@gxchain2-ethereumjs/common'
 import VM from '../../../src'
 import { getPrecompile } from '../../../src/evm/precompiles'
 

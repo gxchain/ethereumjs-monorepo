@@ -10,7 +10,7 @@ import {
   unpadBuffer,
   zeros,
 } from 'ethereumjs-util'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@gxchain2-ethereumjs/common'
 import { DefaultStateManager } from '../../../src/state'
 import { createAccount } from '../utils'
 import { isRunningInKarma } from '../../util'

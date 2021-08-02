@@ -7,7 +7,7 @@ import {
   rlp,
   toBuffer,
 } from 'ethereumjs-util'
-import Common from '@ethereumjs/common'
+import Common from '@gxchain2-ethereumjs/common'
 import { BaseTransaction } from './baseTransaction'
 import {
   AccessList,

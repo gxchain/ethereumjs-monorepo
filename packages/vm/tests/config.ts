@@ -1,4 +1,4 @@
-import Common, { Chain } from '@ethereumjs/common'
+import Common, { Chain } from '@gxchain2-ethereumjs/common'
 
 /**
  * Default hardfork rules to run tests against

@@ -7,7 +7,7 @@ import {
   FeeMarketEIP1559TxData,
 } from './types'
 import { Transaction, AccessListEIP2930Transaction, FeeMarketEIP1559Transaction } from '.'
-import Common from '@ethereumjs/common'
+import Common from '@gxchain2-ethereumjs/common'
 
 export default class TransactionFactory {
   // It is not possible to instantiate a TransactionFactory object.

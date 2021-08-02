@@ -1,6 +1,6 @@
 import tape from 'tape'
 import { BN, toBuffer, bufferToInt } from 'ethereumjs-util'
-import Common, { Chain } from '@ethereumjs/common'
+import Common, { Chain } from '@gxchain2-ethereumjs/common'
 import { Block } from '../src'
 
 function isHexPrefixed(str: string) {
@@ -122,7 +122,7 @@ tape('[Header]: difficulty tests', (t) => {
   t.end()
 
   // Temporarily run local test selection
-  // also: implicit testing through @ethereumjs/vm tests
+  // also: implicit testing through @gxchain2-ethereumjs/vm tests
   // (no Byzantium difficulty tests available yet)
   /*
   let args = {}

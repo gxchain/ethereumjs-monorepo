@@ -1,7 +1,7 @@
 import tape from 'tape'
 import { BN } from 'ethereumjs-util'
 import VM from '../../../src'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@gxchain2-ethereumjs/common'
 
 tape('Berlin: EIP 2315 tests', (t) => {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin, eips: [2315] })

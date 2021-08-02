@@ -1,4 +1,4 @@
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@gxchain2-ethereumjs/common'
 import { getOpcodesForHF } from '../../src/evm/opcodes'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
@@ -24,7 +24,7 @@ function nameOpCodes(raw) {
     }
 
     console.log(
-      pad(pc, roundLog(raw.length, 10)) + '  ' + curOpCode + ' ' + pushData.toString('hex'),
+      pad(pc, roundLog(raw.length, 10)) + '  ' + curOpCode + ' ' + pushData.toString('hex')
     )
 
     pushData = ''

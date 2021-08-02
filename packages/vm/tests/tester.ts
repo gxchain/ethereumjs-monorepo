@@ -1,6 +1,6 @@
 import { exit } from 'process'
 import tape from 'tape'
-import Common from '@ethereumjs/common'
+import Common from '@gxchain2-ethereumjs/common'
 import stateTestsRunner from './GeneralStateTestsRunner'
 import blockchainTestsRunner from './BlockchainTestsRunner'
 import * as config from './config'

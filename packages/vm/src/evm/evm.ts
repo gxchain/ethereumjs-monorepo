@@ -8,7 +8,7 @@ import {
   KECCAK256_NULL,
   MAX_INTEGER,
 } from 'ethereumjs-util'
-import { Block } from '@ethereumjs/block'
+import { Block } from '@gxchain2-ethereumjs/block'
 import { ERROR, VmError } from '../exceptions'
 import { StateManager } from '../state/index'
 import { getPrecompile, PrecompileFunc } from './precompiles'

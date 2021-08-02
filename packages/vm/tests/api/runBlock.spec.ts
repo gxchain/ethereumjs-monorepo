@@ -1,14 +1,14 @@
 import tape from 'tape'
 import { Address, BN, rlp, KECCAK256_RLP, Account } from 'ethereumjs-util'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import { Block } from '@ethereumjs/block'
+import Common, { Chain, Hardfork } from '@gxchain2-ethereumjs/common'
+import { Block } from '@gxchain2-ethereumjs/block'
 import {
   AccessListEIP2930Transaction,
   Transaction,
   TypedTransaction,
   FeeMarketEIP1559Transaction,
   Capability,
-} from '@ethereumjs/tx'
+} from '@gxchain2-ethereumjs/tx'
 import { RunBlockOpts, AfterBlockEvent } from '../../src/runBlock'
 import type { PreByzantiumTxReceipt, PostByzantiumTxReceipt } from '../../src/types'
 import { setupPreConditions, getDAOCommon } from '../util'

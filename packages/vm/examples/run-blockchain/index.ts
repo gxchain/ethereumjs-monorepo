@@ -1,7 +1,7 @@
 import { Account, Address, toBuffer, setLengthLeft } from 'ethereumjs-util'
-import { Block } from '@ethereumjs/block'
-import Blockchain from '@ethereumjs/blockchain'
-import Common from '@ethereumjs/common'
+import { Block } from '@gxchain2-ethereumjs/block'
+import Blockchain from '@gxchain2-ethereumjs/blockchain'
+import Common from '@gxchain2-ethereumjs/common'
 import VM from '../../'
 
 const testData = require('./test-data')
@@ -16,7 +16,7 @@ async function main() {
     common,
     validateConsensus: validatePow,
     validateBlocks,
-    genesisBlock: getGenesisBlock(common)
+    genesisBlock: getGenesisBlock(common),
   })
 
   // When verifying PoW, setting this cache improves the
