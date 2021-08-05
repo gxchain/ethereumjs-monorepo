@@ -1,4 +1,7 @@
 import { Log } from './evm/types'
+import { BN } from 'ethereumjs-util'
+import { InterpreterStep } from './evm/interpreter'
+import { StateManager } from './state'
 
 export type TxReceipt = PreByzantiumTxReceipt | PostByzantiumTxReceipt | EIP2930Receipt
 
@@ -55,3 +58,39 @@ export interface EIP2930Receipt extends PostByzantiumTxReceipt {}
  * @deprecated Please use PostByzantiumTxReceipt instead
  */
 export interface EIP1559Receipt extends PostByzantiumTxReceipt {}
+
+/**
+ * Options for debugging.
+ */
+export interface IDebug {
+  /**
+   * Target transaction hash
+   */
+  hash?: Buffer
+  /**
+   * Called when the transaction starts processing
+   */
+  captureStart(
+    from: undefined | Buffer,
+    to: undefined | Buffer,
+    create: boolean,
+    input: Buffer,
+    gas: BN,
+    gasPrice: BN,
+    value: BN,
+    number: BN,
+    stateManager: StateManager
+  ): Promise<void>
+  /**
+   * Called at every step of processing a transaction
+   */
+  captureState(step: InterpreterStep): Promise<void>
+  /**
+   * Called when a transaction error occurs
+   */
+  captureFault(step: InterpreterStep, err: any): Promise<void>
+  /**
+   * Called when processing a transaction
+   */
+  captureEnd(output: Buffer, gasUsed: BN, time: number): Promise<void>
+}

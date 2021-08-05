@@ -1,8 +1,10 @@
-import { Address, BN } from 'ethereumjs-util'
+import { Address, BN, generateAddress } from 'ethereumjs-util'
 import { Block } from '@gxchain2-ethereumjs/block'
 import VM from './index'
 import TxContext from './evm/txContext'
 import Message from './evm/message'
+import { InterpreterStep } from './evm/interpreter'
+import type { IDebug } from './types'
 import { default as EVM, EVMResult } from './evm/evm'
 
 /**
@@ -27,12 +29,13 @@ export interface RunCallOpts {
   salt?: Buffer
   selfdestruct?: { [k: string]: boolean }
   delegatecall?: boolean
+  debug?: IDebug
 }
 
 /**
  * @ignore
  */
-export default function runCall(this: VM, opts: RunCallOpts): Promise<EVMResult> {
+export default async function runCall(this: VM, opts: RunCallOpts): Promise<EVMResult> {
   const block = opts.block ?? Block.fromBlockData({}, { common: this._common })
 
   const txContext = new TxContext(
@@ -55,7 +58,60 @@ export default function runCall(this: VM, opts: RunCallOpts): Promise<EVMResult>
     delegatecall: opts.delegatecall ?? false,
   })
 
-  const evm = new EVM(this, txContext, block)
+  // Update from account's nonce and balance
+  const state = this.stateManager
+  let fromAccount = await state.getAccount(message.caller)
+  fromAccount.nonce.iaddn(1)
+  await state.putAccount(message.caller, fromAccount)
 
-  return evm.executeMessage(message)
+  let time: undefined | number
+  let handler: undefined | ((step: InterpreterStep, next: () => void) => void)
+  if (opts.debug) {
+    handler = async (step: InterpreterStep, next: () => void) => {
+      await opts.debug!.captureState(step)
+      next()
+    }
+    this.on('step', handler)
+    time = Date.now()
+    await opts.debug.captureStart(
+      message?.caller?.buf,
+      message?.to?.buf ||
+        generateAddress(message.caller.buf, fromAccount.nonce.subn(1).toArrayLike(Buffer)),
+      message.to === undefined,
+      message.data,
+      message.gasLimit,
+      new BN(0),
+      message.value,
+      block.header.number,
+      this.stateManager
+    )
+  }
+
+  let result: undefined | EVMResult
+  let catchedErr: any
+  try {
+    const evm = new EVM(this, txContext, block)
+    result = await evm.executeMessage(message)
+  } catch (err) {
+    catchedErr = err
+  }
+
+  // Remove Listener
+  if (handler) {
+    this.removeListener('step', handler)
+  }
+
+  // Call tx exec over
+  if (opts.debug) {
+    if (result) {
+      await opts.debug.captureEnd(result.execResult.returnValue, result.gasUsed, Date.now() - time!)
+    } else {
+      await opts.debug.captureEnd(Buffer.alloc(0), new BN(0), Date.now() - time!)
+    }
+  }
+
+  if (!result) {
+    throw catchedErr
+  }
+  return result
 }

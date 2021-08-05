@@ -1,15 +1,16 @@
 import { debug as createDebugLogger } from 'debug'
 import { encode } from 'rlp'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
-import { Account, Address, BN, intToBuffer } from 'ethereumjs-util'
+import { Account, Address, BN, intToBuffer, generateAddress } from 'ethereumjs-util'
 import { Block } from '@gxchain2-ethereumjs/block'
 import VM from './index'
 import Bloom from './bloom'
 import { StateManager } from './state'
 import { short } from './evm/opcodes'
-import { Capability, TypedTransaction } from '@gxchain2-ethereumjs/tx'
+import { Capability, TypedTransaction, FeeMarketEIP1559Transaction } from '@gxchain2-ethereumjs/tx'
 import type { RunTxResult } from './runTx'
-import type { TxReceipt } from './types'
+import type { TxReceipt, IDebug } from './types'
+import { InterpreterStep } from './evm/interpreter'
 import * as DAOConfig from './config/dao_fork_accounts_config.json'
 
 // For backwards compatibility from v5.3.0,
@@ -58,6 +59,14 @@ export interface RunBlockOpts {
    * If true, skips the balance check
    */
   skipBalance?: boolean
+  /**
+   * Debug callback
+   */
+  debug?: IDebug
+  /**
+   * Clique signer for generating new block
+   */
+  cliqueSigner?: Buffer
 }
 
 /**
@@ -88,6 +97,10 @@ export interface RunBlockResult {
    * The receipt root after executing the block
    */
   receiptRoot: Buffer
+  /**
+   * The generated block
+   */
+  block?: Block
 }
 
 export interface AfterBlockEvent extends RunBlockResult {
@@ -193,7 +206,10 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
       ...block,
       header: { ...block.header, ...generatedFields },
     }
-    block = Block.fromBlockData(blockData, { common: this._common })
+    block = Block.fromBlockData(blockData, {
+      common: this._common,
+      cliqueSigner: opts.cliqueSigner,
+    })
   } else {
     if (result.receiptRoot && !result.receiptRoot.equals(block.header.receiptTrie)) {
       if (this.DEBUG) {
@@ -240,6 +256,7 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
     gasUsed: result.gasUsed,
     logsBloom: result.bloom.bitvector,
     receiptRoot: result.receiptRoot,
+    block: generateFields ? block : undefined,
   }
 
   const afterBlockEvent: AfterBlockEvent = { ...results, block }
@@ -312,9 +329,18 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
   const receipts = []
   const txResults = []
 
+  let handler: undefined | ((step: InterpreterStep, next: () => void) => void)
+  if (opts.debug) {
+    handler = async (step: InterpreterStep, next: () => void) => {
+      await opts.debug!.captureState(step)
+      next()
+    }
+  }
+
   /*
    * Process transactions
    */
+  let catchedErr: any
   for (let txIdx = 0; txIdx < block.transactions.length; txIdx++) {
     const tx = block.transactions[txIdx]
 
@@ -329,37 +355,82 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
 
     const gasLimitIsHigherThanBlock = maxGasLimit.lt(tx.gasLimit.add(gasUsed))
     if (gasLimitIsHigherThanBlock) {
+      if (handler) {
+        this.removeListener('step', handler)
+      }
       throw new Error('tx has a higher gas limit than the block')
+    }
+
+    // Call tx exec start
+    let time: undefined | number
+    if (opts.debug && (!opts.debug.hash || opts.debug.hash.equals(tx.hash()))) {
+      time = Date.now()
+      await opts.debug.captureStart(
+        tx.getSenderAddress().buf,
+        tx?.to?.buf || generateAddress(tx.getSenderAddress().buf, tx.nonce.toArrayLike(Buffer)),
+        tx.toCreationAddress(),
+        tx.data,
+        tx.gasLimit,
+        tx instanceof FeeMarketEIP1559Transaction ? new BN(0) : tx.gasPrice,
+        tx.value,
+        block.header.number,
+        this.stateManager
+      )
+      this.on('step', handler)
     }
 
     // Run the tx through the VM
     const { skipBalance, skipNonce } = opts
 
-    const txRes = await this.runTx({
-      tx,
-      block,
-      skipBalance,
-      skipNonce,
-      blockGasUsed: gasUsed,
-    })
-    txResults.push(txRes)
+    let txRes: undefined | RunTxResult
+    try {
+      txRes = await this.runTx({
+        tx,
+        block,
+        skipBalance,
+        skipNonce,
+        blockGasUsed: gasUsed,
+      })
+      txResults.push(txRes)
+    } catch (err) {
+      catchedErr = err
+    }
+
     if (this.DEBUG) {
       debug('-'.repeat(100))
     }
 
-    // Add to total block gas usage
-    gasUsed = gasUsed.add(txRes.gasUsed)
-    if (this.DEBUG) {
-      debug(`Add tx gas used (${txRes.gasUsed}) to total block gas usage (-> ${gasUsed})`)
+    if (txRes) {
+      // Add to total block gas usage
+      gasUsed = gasUsed.add(txRes.gasUsed)
+      if (this.DEBUG) {
+        debug(`Add tx gas used (${txRes.gasUsed}) to total block gas usage (-> ${gasUsed})`)
+      }
+
+      // Combine blooms via bitwise OR
+      bloom.or(txRes.bloom)
+
+      // Add receipt to trie to later calculate receipt root
+      receipts.push(txRes.receipt)
+      const encodedReceipt = encodeReceipt(tx, txRes.receipt)
+      await receiptTrie.put(encode(txIdx), encodedReceipt)
     }
 
-    // Combine blooms via bitwise OR
-    bloom.or(txRes.bloom)
+    // Call tx exec over
+    if (opts.debug && (!opts.debug.hash || opts.debug.hash.equals(tx.hash()))) {
+      if (txRes) {
+        await opts.debug.captureEnd(txRes.execResult.returnValue, txRes.gasUsed, Date.now() - time!)
+      } else {
+        await opts.debug.captureEnd(Buffer.alloc(0), new BN(0), Date.now() - time!)
+      }
+      if (handler) {
+        this.removeListener('step', handler)
+      }
+    }
 
-    // Add receipt to trie to later calculate receipt root
-    receipts.push(txRes.receipt)
-    const encodedReceipt = encodeReceipt(tx, txRes.receipt)
-    await receiptTrie.put(encode(txIdx), encodedReceipt)
+    if (catchedErr) {
+      break
+    }
   }
 
   return {
