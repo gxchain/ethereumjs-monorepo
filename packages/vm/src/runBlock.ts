@@ -2,7 +2,7 @@ import { debug as createDebugLogger } from 'debug'
 import { encode } from 'rlp'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import { Account, Address, BN, intToBuffer, generateAddress } from 'ethereumjs-util'
-import { Block } from '@gxchain2-ethereumjs/block'
+import { Block, BlockHeader } from '@gxchain2-ethereumjs/block'
 import VM from './index'
 import Bloom from './bloom'
 import { StateManager } from './state'
@@ -67,6 +67,10 @@ export interface RunBlockOpts {
    * Clique signer for generating new block
    */
   cliqueSigner?: Buffer
+  /**
+   * Get block reward address callback
+   */
+  getBlockRewardAddress?: (header: BlockHeader) => Promise<Address>
 }
 
 /**
@@ -309,7 +313,7 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
   const blockResults = await applyTransactions.bind(this)(block, opts)
   // Pay ommers and miners
   if (this._common.consensusType() === 'pow') {
-    await assignBlockRewards.bind(this)(block)
+    await assignBlockRewards.bind(this)(block, opts)
   }
   return blockResults
 }
@@ -446,7 +450,7 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
  * Calculates block rewards for miner and ommers and puts
  * the updated balances of their accounts to state.
  */
-async function assignBlockRewards(this: VM, block: Block): Promise<void> {
+async function assignBlockRewards(this: VM, block: Block, opts: RunBlockOpts): Promise<void> {
   if (this.DEBUG) {
     debug(`Assign block rewards`)
   }
@@ -463,7 +467,13 @@ async function assignBlockRewards(this: VM, block: Block): Promise<void> {
   }
   // Reward miner
   const reward = calculateMinerReward(minerReward, ommers.length)
-  const account = await rewardAccount(state, block.header.coinbase, reward)
+  const account = await rewardAccount(
+    state,
+    opts.getBlockRewardAddress
+      ? await opts.getBlockRewardAddress(block.header)
+      : block.header.coinbase,
+    reward
+  )
   if (this.DEBUG) {
     debug(`Add miner reward ${reward} to account ${block.header.coinbase} (-> ${account.balance})`)
   }
