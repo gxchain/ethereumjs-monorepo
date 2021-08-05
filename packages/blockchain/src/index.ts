@@ -262,7 +262,8 @@ export default class Blockchain implements BlockchainInterface {
 
     if (this._validateConsensus) {
       if (this._common.consensusType() === 'pow') {
-        throw new Error('unsupport pow consensus')
+        // throw new Error('unsupport pow consensus')
+        // do nothing
       }
       if (this._common.consensusType() === 'poa') {
         if (this._common.consensusAlgorithm() !== 'clique') {
