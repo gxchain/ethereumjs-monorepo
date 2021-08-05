@@ -26,7 +26,7 @@
     "tsc": "../../config/cli/ts-compile.sh",
     "lint": "../../config/cli/lint.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
-    "test": "npm run test:node && npm run test:browser",
+    "test": "npm run test:node",
     "test:node": "tape -r ts-node/register ./test/*.spec.ts",
     "test:browser": "karma start karma.conf.js"
   },
