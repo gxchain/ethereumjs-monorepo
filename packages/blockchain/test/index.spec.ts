@@ -9,7 +9,6 @@ import blocksData from './testdata/blocks_mainnet.json'
 
 const level = require('level-mem')
 
-/*
 tape('blockchain test', (t) => {
   t.test('should not crash on getting head of a blockchain without a genesis', async (st) => {
     const blockchain = new Blockchain({
@@ -946,4 +945,3 @@ tape('initialization tests', (t) => {
     st.end()
   })
 })
-*/
