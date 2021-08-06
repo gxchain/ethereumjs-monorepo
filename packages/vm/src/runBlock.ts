@@ -71,6 +71,10 @@ export interface RunBlockOpts {
    * Get block reward address callback
    */
   getBlockRewardAddress?: (header: BlockHeader) => Promise<Address>
+  /**
+   * Generate receipt root callback
+   */
+  genReceiptTrie?: (transactions: TypedTransaction[], receipts: TxReceipt[]) => Promise<Buffer>
 }
 
 /**
@@ -329,7 +333,6 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
   const bloom = new Bloom()
   // the total amount of gas used processing these transactions
   let gasUsed = new BN(0)
-  const receiptTrie = new Trie()
   const receipts = []
   const txResults = []
 
@@ -416,8 +419,6 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
 
       // Add receipt to trie to later calculate receipt root
       receipts.push(txRes.receipt)
-      const encodedReceipt = encodeReceipt(tx, txRes.receipt)
-      await receiptTrie.put(encode(txIdx), encodedReceipt)
     }
 
     // Call tx exec over
@@ -437,10 +438,14 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
     }
   }
 
+  if (catchedErr) {
+    throw catchedErr
+  }
+
   return {
     bloom,
     gasUsed,
-    receiptRoot: receiptTrie.root,
+    receiptRoot: await (opts.genReceiptTrie ?? _genReceiptTrie)(block.transactions, receipts),
     receipts,
     results: txResults,
   }
@@ -601,6 +606,14 @@ async function _applyDAOHardfork(state: StateManager) {
 
   // finally, put the Refund Account
   await state.putAccount(DAORefundContractAddress, DAORefundAccount)
+}
+
+async function _genReceiptTrie(transactions: TypedTransaction[], receipts: TxReceipt[]) {
+  const trie = new Trie()
+  for (let i = 0; i < receipts.length; i++) {
+    await trie.put(encode(i), encodeReceipt(transactions[i], receipts[i]))
+  }
+  return trie.root
 }
 
 async function _genTxTrie(block: Block) {
