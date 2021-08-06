@@ -336,7 +336,7 @@ export default class Common extends EventEmitter {
     }
     let existing = false
     for (const hfChanges of HARDFORK_CHANGES) {
-      if (hfChanges[0] === hardfork) {
+      if (this.hardforkIsActiveOnChain(hfChanges[0]) && hfChanges[0] === hardfork) {
         if (this._hardfork !== hardfork) {
           this._hardfork = hardfork
           this.emit('hardforkChanged', hardfork)
@@ -489,21 +489,24 @@ export default class Common extends EventEmitter {
 
     let value = null
     for (const hfChanges of HARDFORK_CHANGES) {
-      // EIP-referencing HF file (e.g. berlin.json)
-      if (hfChanges[1].hasOwnProperty('eips')) {
-        // eslint-disable-line
-        const hfEIPs = hfChanges[1]['eips']
-        for (const eip of hfEIPs) {
-          const valueEIP = this.paramByEIP(topic, name, eip)
-          value = valueEIP !== null ? valueEIP : value
-        }
-        // Paramater-inlining HF file (e.g. istanbul.json)
-      } else {
-        if (!hfChanges[1][topic]) {
-          throw new Error(`Topic ${topic} not defined`)
-        }
-        if (hfChanges[1][topic][name] !== undefined) {
-          value = hfChanges[1][topic][name].v
+      // the hardfork must be activated
+      if (this.hardforkIsActiveOnChain(hfChanges[0])) {
+        // EIP-referencing HF file (e.g. berlin.json)
+        if (hfChanges[1].hasOwnProperty('eips')) {
+          // eslint-disable-line
+          const hfEIPs = hfChanges[1]['eips']
+          for (const eip of hfEIPs) {
+            const valueEIP = this.paramByEIP(topic, name, eip)
+            value = valueEIP !== null ? valueEIP : value
+          }
+          // Paramater-inlining HF file (e.g. istanbul.json)
+        } else {
+          if (!hfChanges[1][topic]) {
+            throw new Error(`Topic ${topic} not defined`)
+          }
+          if (hfChanges[1][topic][name] !== undefined) {
+            value = hfChanges[1][topic][name].v
+          }
         }
       }
       if (hfChanges[0] === hardfork) break
@@ -560,10 +563,12 @@ export default class Common extends EventEmitter {
       return true
     }
     for (const hfChanges of HARDFORK_CHANGES) {
-      const hf = hfChanges[1]
-      if (this.gteHardfork(hf['name']) && 'eips' in hf) {
-        if (hf['eips'].includes(eip)) {
-          return true
+      if (this.hardforkIsActiveOnChain(hfChanges[0])) {
+        const hf = hfChanges[1]
+        if (this.gteHardfork(hf['name'], { onlyActive: true }) && 'eips' in hf) {
+          if (hf['eips'].includes(eip)) {
+            return true
+          }
         }
       }
     }
