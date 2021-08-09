@@ -105,6 +105,13 @@ export interface VMOpts {
    * Default: `false`
    */
   hardforkByBlockNumber?: boolean
+
+  /**
+   * Listen to the `hardforkChanged` event
+   *
+   * Default: `false`
+   */
+  listenHardforkChanged?: boolean
 }
 
 /**
@@ -211,9 +218,11 @@ export default class VM extends AsyncEventEmitter {
         supportedHardforks,
       })
     }
-    this._common.on('hardforkChanged', () => {
-      this._opcodes = getOpcodesForHF(this._common)
-    })
+    if (opts.listenHardforkChanged) {
+      this._common.on('hardforkChanged', () => {
+        this._opcodes = getOpcodesForHF(this._common)
+      })
+    }
 
     // Set list of opcodes based on HF
     // TODO: make this EIP-friendly
