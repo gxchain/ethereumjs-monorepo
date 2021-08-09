@@ -114,6 +114,11 @@ export interface BlockchainOptions {
    * provided from the `common` will be used.
    */
   genesisBlock?: Block
+
+  /**
+   * Customizable database
+   */
+  dbManager?: DBManager
 }
 
 /**
@@ -257,8 +262,15 @@ export default class Blockchain implements BlockchainInterface {
     this._validateConsensus = opts.validateConsensus ?? true
     this._validateBlocks = opts.validateBlocks ?? true
 
-    this.db = opts.db ? opts.db : level()
-    this.dbManager = new DBManager(this.db, this._common)
+    if (opts.db && opts.dbManager) {
+      throw new Error('db and dbManager options cannot appear at the same time')
+    } else if (opts.dbManager) {
+      this.db = (opts.dbManager as any)._db
+      this.dbManager = opts.dbManager
+    } else {
+      this.db = opts.db ? opts.db : level()
+      this.dbManager = new DBManager(this.db, this._common)
+    }
 
     if (this._validateConsensus) {
       if (this._common.consensusType() === 'pow') {
