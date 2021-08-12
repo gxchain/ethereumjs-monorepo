@@ -165,7 +165,11 @@ export default class EVM {
         } value=${message.value.toString()} delegatecall=${message.delegatecall ? 'yes' : 'no'}`
       )
     }
-    if (message.to) {
+
+    // If receive `contractAddress` option, it must be update
+    if (message.contractAddress) {
+      result = await this._executeUpdate(message)
+    } else if (message.to) {
       if (this._vm.DEBUG) {
         debug(`Message CALL execution (to: ${message.to.toString()})`)
       }
@@ -328,6 +332,169 @@ export default class EVM {
     toAccount = await this._state.getAccount(message.to)
     // EIP-161 on account creation and CREATE execution
     if (this._vm._common.gteHardfork('spuriousDragon')) {
+      toAccount.nonce.iaddn(1)
+    }
+
+    // Add tx value to the `to` account
+    let errorMessage
+    try {
+      await this._addToBalance(toAccount, message)
+    } catch (e) {
+      errorMessage = e
+    }
+
+    let exit = false
+    if (!message.code || message.code.length === 0) {
+      exit = true
+      if (this._vm.DEBUG) {
+        debug(`Exit early on no code`)
+      }
+    }
+    if (errorMessage) {
+      exit = true
+      if (this._vm.DEBUG) {
+        debug(`Exit early on value tranfer overflowed`)
+      }
+    }
+    if (exit) {
+      return {
+        gasUsed: new BN(0),
+        createdAddress: message.to,
+        execResult: {
+          gasUsed: new BN(0),
+          exceptionError: errorMessage, // only defined if addToBalance failed
+          returnValue: Buffer.alloc(0),
+        },
+      }
+    }
+
+    if (this._vm.DEBUG) {
+      debug(`Start bytecode processing...`)
+    }
+    let result = await this.runInterpreter(message)
+
+    // fee for size of the return value
+    let totalGas = result.gasUsed
+    let returnFee = new BN(0)
+    if (!result.exceptionError) {
+      returnFee = new BN(result.returnValue.length).imuln(
+        this._vm._common.param('gasPrices', 'createData')
+      )
+      totalGas = totalGas.add(returnFee)
+      if (this._vm.DEBUG) {
+        debugGas(`Add return value size fee (${returnFee} to gas used (-> ${totalGas}))`)
+      }
+    }
+
+    // Check for SpuriousDragon EIP-170 code size limit
+    let allowedCodeSize = true
+    if (
+      this._vm._common.gteHardfork('spuriousDragon') &&
+      result.returnValue.length > this._vm._common.param('vm', 'maxCodeSize')
+    ) {
+      allowedCodeSize = false
+    }
+
+    // If enough gas and allowed code size
+    let CodestoreOOG = false
+    if (
+      totalGas.lte(message.gasLimit) &&
+      (this._vm._allowUnlimitedContractSize || allowedCodeSize)
+    ) {
+      if (
+        this._vm._common.isActivatedEIP(3541) &&
+        result.returnValue.slice(0, 1).equals(Buffer.from('EF', 'hex'))
+      ) {
+        result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
+      } else {
+        result.gasUsed = totalGas
+      }
+    } else {
+      if (this._vm._common.gteHardfork('homestead')) {
+        if (this._vm.DEBUG) {
+          debug(`Not enough gas or code size not allowed (>= Homestead)`)
+        }
+        result = { ...result, ...OOGResult(message.gasLimit) }
+      } else {
+        // we are in Frontier
+        if (this._vm.DEBUG) {
+          debug(`Not enough gas or code size not allowed (Frontier)`)
+        }
+        if (totalGas.sub(returnFee).lte(message.gasLimit)) {
+          // we cannot pay the code deposit fee (but the deposit code actually did run)
+          result = { ...result, ...COOGResult(totalGas.sub(returnFee)) }
+          CodestoreOOG = true
+        } else {
+          result = { ...result, ...OOGResult(message.gasLimit) }
+        }
+      }
+    }
+
+    // Save code if a new contract was created
+    if (!result.exceptionError && result.returnValue && result.returnValue.toString() !== '') {
+      await this._state.putContractCode(message.to, result.returnValue)
+      if (this._vm.DEBUG) {
+        debug(`Code saved on new contract creation`)
+      }
+    } else if (CodestoreOOG) {
+      // This only happens at Frontier. But, let's do a sanity check;
+      if (!this._vm._common.gteHardfork('homestead')) {
+        // Pre-Homestead behavior; put an empty contract.
+        // This contract would be considered "DEAD" in later hard forks.
+        // It is thus an unecessary default item, which we have to save to dik
+        // It does change the state root, but it only wastes storage.
+        //await this._state.putContractCode(message.to, result.returnValue)
+        const account = await this._state.getAccount(message.to)
+        await this._state.putAccount(message.to, account)
+      }
+    }
+
+    return {
+      gasUsed: result.gasUsed,
+      createdAddress: message.to,
+      execResult: result,
+    }
+  }
+
+  async _executeUpdate(message: Message): Promise<EVMResult> {
+    // Don't reduce tx value from sender, because `_executeUpdate` is called from system
+    // const account = await this._state.getAccount(message.caller)
+    // await this._reduceSenderBalance(account, message)
+
+    message.code = message.data
+    message.data = Buffer.alloc(0)
+    message.to = message.contractAddress!
+
+    let exists = await this._state.accountExists(message.to)
+    let toAccount = await this._state.getAccount(message.to)
+
+    // Check invalid update
+    if (exists && toAccount.codeHash.equals(KECCAK256_NULL)) {
+      return {
+        gasUsed: message.gasLimit,
+        createdAddress: message.to,
+        execResult: {
+          returnValue: Buffer.alloc(0),
+          exceptionError: new VmError(ERROR.INVALID_UPDATE),
+          gasUsed: message.gasLimit,
+        },
+      }
+    }
+
+    await this._state.clearContractStorage(message.to)
+
+    if (!exists) {
+      const newContractEvent: NewContractEvent = {
+        address: message.to,
+        code: message.code,
+      }
+
+      await this._vm._emit('newContract', newContractEvent)
+    }
+
+    toAccount = await this._state.getAccount(message.to)
+    // EIP-161 on account creation and CREATE execution
+    if (!exists && this._vm._common.gteHardfork('spuriousDragon')) {
       toAccount.nonce.iaddn(1)
     }
 

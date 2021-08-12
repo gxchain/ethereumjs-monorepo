@@ -16,6 +16,9 @@ export default class Message {
   selfdestruct: any
   delegatecall: boolean
 
+  // replaced contract address, used to update the contract
+  contractAddress?: Address
+
   constructor(opts: any) {
     this.to = opts.to
     this.value = opts.value ? opts.value : new BN(0)
@@ -30,6 +33,7 @@ export default class Message {
     this.salt = opts.salt // For CREATE2, TODO: Move from here
     this.selfdestruct = opts.selfdestruct // TODO: Move from here
     this.delegatecall = opts.delegatecall || false
+    this.contractAddress = opts.contractAddress
   }
 
   get codeAddress(): Address {
