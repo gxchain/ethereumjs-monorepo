@@ -2,7 +2,7 @@ import { debug as createDebugLogger } from 'debug'
 import { encode } from 'rlp'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import { Account, Address, BN, intToBuffer, generateAddress } from 'ethereumjs-util'
-import { Block, BlockHeader } from '@gxchain2-ethereumjs/block'
+import { Block } from '@gxchain2-ethereumjs/block'
 import VM from './index'
 import Bloom from './bloom'
 import { StateManager } from './state'
@@ -68,9 +68,9 @@ export interface RunBlockOpts {
    */
   cliqueSigner?: Buffer
   /**
-   * Get block reward address callback
+   * Reward callback
    */
-  getBlockRewardAddress?: (header: BlockHeader) => Promise<Address>
+  rewardAddress?: (stateManager: StateManager, value: BN) => Promise<void>
   /**
    * Generate receipt root callback
    */
@@ -395,6 +395,7 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
         skipBalance,
         skipNonce,
         blockGasUsed: gasUsed,
+        rewardAddress: opts.rewardAddress,
       })
       txResults.push(txRes)
     } catch (err) {
@@ -470,15 +471,20 @@ async function assignBlockRewards(this: VM, block: Block, opts: RunBlockOpts): P
   }
   // Reward miner
   const reward = calculateMinerReward(minerReward, ommers.length)
-  const account = await rewardAccount(
-    state,
-    opts.getBlockRewardAddress
-      ? await opts.getBlockRewardAddress(block.header)
-      : block.header.coinbase,
-    reward
-  )
-  if (this.DEBUG) {
-    debug(`Add miner reward ${reward} to account ${block.header.coinbase} (-> ${account.balance})`)
+  if (opts.rewardAddress) {
+    await opts.rewardAddress(state, reward)
+  } else {
+    if (this._common.consensusType() === 'pow') {
+      await rewardAccount(state, block.header.coinbase, reward)
+    } else {
+      let miner: Address
+      if ('cliqueSigner' in block.header) {
+        miner = block.header.cliqueSigner()
+      } else {
+        miner = Address.zero()
+      }
+      await rewardAccount(state, miner, reward)
+    }
   }
 }
 

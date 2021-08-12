@@ -24,6 +24,7 @@ import type {
   PreByzantiumTxReceipt,
   PostByzantiumTxReceipt,
 } from './types'
+import { StateManager } from './state'
 
 const debug = createDebugLogger('vm:tx')
 const debugGas = createDebugLogger('vm:tx:gas')
@@ -72,6 +73,11 @@ export interface RunTxOpts {
    * To obtain an accurate tx receipt input the block gas used up until this tx.
    */
   blockGasUsed?: BN
+
+  /**
+   * Reward callback
+   */
+  rewardAddress?: (stateManager: StateManager, value: BN) => Promise<void>
 }
 
 /**
@@ -411,34 +417,36 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     )
   }
 
-  // Update miner's balance
-  let miner
-  if (this._common.consensusType() === 'pow') {
-    miner = block.header.coinbase
+  const reward = this._common.isActivatedEIP(1559)
+    ? results.gasUsed.mul(<BN>inclusionFeePerGas)
+    : results.amountSpent
+  if (opts.rewardAddress) {
+    await opts.rewardAddress(state, reward)
   } else {
-    // Backwards-compatibilty check
-    // TODO: can be removed along VM v6 release
-    if ('cliqueSigner' in block.header) {
-      miner = block.header.cliqueSigner()
+    // Update miner's balance
+    let miner
+    if (this._common.consensusType() === 'pow') {
+      miner = block.header.coinbase
     } else {
-      miner = Address.zero()
+      // Backwards-compatibilty check
+      // TODO: can be removed along VM v6 release
+      if ('cliqueSigner' in block.header) {
+        miner = block.header.cliqueSigner()
+      } else {
+        miner = Address.zero()
+      }
     }
-  }
-  const minerAccount = await state.getAccount(miner)
-  // add the amount spent on gas to the miner's account
+    const minerAccount = await state.getAccount(miner)
+    // add the amount spent on gas to the miner's account
+    minerAccount.balance.iadd(reward)
 
-  if (this._common.isActivatedEIP(1559)) {
-    minerAccount.balance.iadd(results.gasUsed.mul(<BN>inclusionFeePerGas))
-  } else {
-    minerAccount.balance.iadd(results.amountSpent)
-  }
-
-  // Put the miner account into the state. If the balance of the miner account remains zero, note that
-  // the state.putAccount function puts this into the "touched" accounts. This will thus be removed when
-  // we clean the touched accounts below in case we are in a fork >= SpuriousDragon
-  await state.putAccount(miner, minerAccount)
-  if (this.DEBUG) {
-    debug(`tx update miner account (${miner.toString()}) balance (-> ${minerAccount.balance})`)
+    // Put the miner account into the state. If the balance of the miner account remains zero, note that
+    // the state.putAccount function puts this into the "touched" accounts. This will thus be removed when
+    // we clean the touched accounts below in case we are in a fork >= SpuriousDragon
+    await state.putAccount(miner, minerAccount)
+    if (this.DEBUG) {
+      debug(`tx update miner account (${miner.toString()}) balance (-> ${minerAccount.balance})`)
+    }
   }
 
   /*
