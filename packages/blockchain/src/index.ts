@@ -917,22 +917,20 @@ export default class Blockchain implements BlockchainInterface {
           if (this.cliqueCheckRecentlySigned(header)) {
             throw new Error('recently signed')
           }
-        }
-      }
 
-      if (this._common.consensusAlgorithm() === 'clique') {
-        // validate checkpoint signers towards active signers on epoch transition blocks
-        if (header.cliqueIsEpochTransition()) {
-          // note: keep votes on epoch transition blocks in case of reorgs.
-          // only active (non-stale) votes will counted (if vote.blockNumber >= lastEpochBlockNumber)
+          // validate checkpoint signers towards active signers on epoch transition blocks
+          if (header.cliqueIsEpochTransition()) {
+            // note: keep votes on epoch transition blocks in case of reorgs.
+            // only active (non-stale) votes will counted (if vote.blockNumber >= lastEpochBlockNumber)
 
-          const checkpointSigners = header.cliqueEpochTransitionSigners()
-          const activeSigners = this.cliqueActiveSigners()
-          for (const [i, cSigner] of checkpointSigners.entries()) {
-            if (!activeSigners[i] || !activeSigners[i].equals(cSigner)) {
-              throw new Error(
-                `checkpoint signer not found in active signers list at index ${i}: ${cSigner.toString()}`
-              )
+            const checkpointSigners = header.cliqueEpochTransitionSigners()
+            const activeSigners = this.cliqueActiveSigners()
+            for (const [i, cSigner] of checkpointSigners.entries()) {
+              if (!activeSigners[i] || !activeSigners[i].equals(cSigner)) {
+                throw new Error(
+                  `checkpoint signer not found in active signers list at index ${i}: ${cSigner.toString()}`
+                )
+              }
             }
           }
         }
