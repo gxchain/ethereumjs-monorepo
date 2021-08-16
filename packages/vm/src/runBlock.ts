@@ -78,7 +78,7 @@ export interface RunBlockOpts {
   /**
    * After apply block callback
    */
-  afterApply?: (stateManager: StateManager) => Promise<Buffer>
+  afterApply?: (stateManager: StateManager) => Promise<void>
 }
 
 /**
