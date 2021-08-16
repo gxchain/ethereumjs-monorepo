@@ -75,6 +75,10 @@ export interface RunBlockOpts {
    * Generate receipt root callback
    */
   genReceiptTrie?: (transactions: TypedTransaction[], receipts: TxReceipt[]) => Promise<Buffer>
+  /**
+   * After apply block callback
+   */
+  afterApply?: (stateManager: StateManager) => Promise<Buffer>
 }
 
 /**
@@ -192,6 +196,9 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
     }
     throw err
   }
+
+  // Call after apply if exists
+  opts.afterApply && (await opts.afterApply(state))
 
   // Persist state
   await state.commit()
