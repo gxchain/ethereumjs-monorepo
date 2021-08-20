@@ -166,7 +166,7 @@ export default class EVM {
       )
     }
 
-    // If receive `contractAddress` option, it must be update
+    // If receive `contractAddress` option, it must be a update message
     if (message.contractAddress) {
       result = await this._executeUpdate(message)
     } else if (message.to) {

@@ -13,6 +13,8 @@ import type { TxReceipt, IDebug } from './types'
 import { InterpreterStep } from './evm/interpreter'
 import * as DAOConfig from './config/dao_fork_accounts_config.json'
 
+type PromisResultType<T> = T extends PromiseLike<infer U> ? U : T
+
 // For backwards compatibility from v5.3.0,
 // TxReceipts are exported. These exports are
 // deprecated and may be removed soon, please
@@ -78,7 +80,10 @@ export interface RunBlockOpts {
   /**
    * After apply block callback
    */
-  afterApply?: (stateManager: StateManager) => Promise<void>
+  afterApply?: (
+    stateManager: StateManager,
+    result: PromisResultType<ReturnType<typeof applyBlock>>
+  ) => Promise<void>
 }
 
 /**
@@ -189,6 +194,8 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
         } txResults=${result.results.length}`
       )
     }
+    // Call after apply if exists
+    opts.afterApply && (await opts.afterApply(state, result))
   } catch (err) {
     await state.revert()
     if (this.DEBUG) {
@@ -196,9 +203,6 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
     }
     throw err
   }
-
-  // Call after apply if exists
-  opts.afterApply && (await opts.afterApply(state))
 
   // Persist state
   await state.commit()
