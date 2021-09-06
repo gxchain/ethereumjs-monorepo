@@ -12,7 +12,6 @@ import {
 } from 'ethereumjs-util'
 import { encode, decode } from 'rlp'
 import Common, { Chain, Hardfork } from '@gxchain2-ethereumjs/common'
-import { genesisStateByName } from '@gxchain2-ethereumjs/common/dist/genesisStates'
 import { StateManager, StorageDump } from './interface'
 import Cache from './cache'
 import { getActivePrecompiles, ripemdPrecompileAddress } from '../evm/precompiles'

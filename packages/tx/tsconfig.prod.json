@@ -8,7 +8,6 @@
   },
   "include": ["src/**/*.ts"],
   "references": [
-    { "path": "../common/tsconfig.prod.json" },
-    { "path": "../util/tsconfig.prod.json" }
+    { "path": "../common/tsconfig.prod.json" }
   ],
 }
