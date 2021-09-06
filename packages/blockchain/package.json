@@ -17,8 +17,10 @@
   "browser": "dist.browser/index.js",
   "scripts": {
     "prepublishOnly": "npm run clean && npm run build && npm run test",
-    "clean": "rm -Rf ./dist && rm -Rf ./dist.browser",
-    "build": "../../config/cli/ts-build.sh",
+    "clean": "../../config/cli/clean-package.sh",
+    "build": "npm run build:node && npm run build:browser",
+    "build:node": "../../config/cli/ts-build.sh node",
+    "build:browser": "../../config/cli/ts-build.sh browser",
     "coverage": "../../config/cli/coverage.sh",
     "docs:build": "typedoc --options typedoc.js",
     "format": "ethereumjs-config-format",

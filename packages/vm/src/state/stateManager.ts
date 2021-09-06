@@ -560,7 +560,7 @@ export default class DefaultStateManager implements StateManager {
 
     const genesis = await this.hasGenesisState()
     if (!genesis) {
-      await this.generateGenesis(genesisStateByName(this._common.chainName()))
+      await this.generateGenesis(this._common.genesisState())
     }
   }
 

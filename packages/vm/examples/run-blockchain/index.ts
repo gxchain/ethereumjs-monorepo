@@ -1,15 +1,15 @@
 import { Account, Address, toBuffer, setLengthLeft } from 'ethereumjs-util'
 import { Block } from '@gxchain2-ethereumjs/block'
 import Blockchain from '@gxchain2-ethereumjs/blockchain'
-import Common from '@gxchain2-ethereumjs/common'
+import Common, { ConsensusType } from '@gxchain2-ethereumjs/common'
 import VM from '../../'
 
 const testData = require('./test-data')
-const level = require('level')
+// const level = require('level')
 
 async function main() {
   const common = new Common({ chain: testData.network.toLowerCase() })
-  const validatePow = common.consensusType() === 'pow'
+  const validatePow = common.consensusType() === ConsensusType.ProofOfWork
   const validateBlocks = true
 
   const blockchain = await Blockchain.create({
@@ -23,9 +23,9 @@ async function main() {
   // performance of subsequent runs of this script.
   // Note that this optimization is a bit hacky and might
   // not be working in the future though. :-)
-  if (validatePow) {
-    blockchain._ethash!.cacheDB = level('./.cachedb')
-  }
+  // if (validatePow) {
+  //   blockchain._ethash!.cacheDB = level('./.cachedb')
+  // }
 
   const vm = new VM({ blockchain, common })
 
