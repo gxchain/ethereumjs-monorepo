@@ -62,6 +62,7 @@ export interface EIP1559Receipt extends PostByzantiumTxReceipt {}
 /**
  * Options for debugging.
  */
+// eslint-disable-next-line
 export interface IDebug {
   /**
    * Target transaction hash

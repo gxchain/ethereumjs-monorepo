@@ -384,7 +384,7 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
       time = Date.now()
       await opts.debug.captureStart(
         tx.getSenderAddress().buf,
-        tx?.to?.buf || generateAddress(tx.getSenderAddress().buf, tx.nonce.toArrayLike(Buffer)),
+        tx?.to?.buf ?? generateAddress(tx.getSenderAddress().buf, tx.nonce.toArrayLike(Buffer)),
         tx.toCreationAddress(),
         tx.data,
         tx.gasLimit,

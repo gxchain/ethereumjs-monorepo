@@ -465,7 +465,7 @@ export default class EVM {
     message.data = Buffer.alloc(0)
     message.to = message.contractAddress!
 
-    let exists = await this._state.accountExists(message.to)
+    const exists = await this._state.accountExists(message.to)
     let toAccount = await this._state.getAccount(message.to)
 
     // Check invalid update

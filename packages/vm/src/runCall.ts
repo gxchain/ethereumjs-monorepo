@@ -60,7 +60,7 @@ export default async function runCall(this: VM, opts: RunCallOpts): Promise<EVMR
 
   // Update from account's nonce and balance
   const state = this.stateManager
-  let fromAccount = await state.getAccount(message.caller)
+  const fromAccount = await state.getAccount(message.caller)
   fromAccount.nonce.iaddn(1)
   await state.putAccount(message.caller, fromAccount)
 
