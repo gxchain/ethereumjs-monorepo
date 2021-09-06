@@ -328,9 +328,7 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
   }
   const blockResults = await applyTransactions.bind(this)(block, opts)
   // Pay ommers and miners
-  if (this._common.consensusType() === ConsensusType.ProofOfWork) {
-    await assignBlockRewards.bind(this)(block, opts)
-  }
+  await assignBlockRewards.bind(this)(block, opts)
   return blockResults
 }
 
@@ -488,7 +486,7 @@ async function assignBlockRewards(this: VM, block: Block, opts: RunBlockOpts): P
   if (opts.rewardAddress) {
     await opts.rewardAddress(state, reward)
   } else {
-    if (this._common.consensusType() === 'pow') {
+    if (this._common.consensusType() === ConsensusType.ProofOfWork) {
       await rewardAccount(state, block.header.coinbase, reward)
     } else {
       let miner: Address

@@ -189,7 +189,7 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
     const customChainsWithGenesis: [IChain, GenesisState][] = [[testnet, genesisState]]
     c = new Common({
       chain: 'testnet',
-      hardfork: Hardfork.Istanbul,
+      hardfork: Hardfork.Byzantium,
       customChains: customChainsWithGenesis,
     })
     st.deepEqual(

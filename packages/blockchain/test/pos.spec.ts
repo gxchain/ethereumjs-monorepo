@@ -1,6 +1,6 @@
 import tape from 'tape'
-import { Block } from '@ethereumjs/block'
-import Common, { Hardfork } from '@ethereumjs/common'
+import { Block } from '@gxchain2-ethereumjs/block'
+import Common, { Hardfork } from '@gxchain2-ethereumjs/common'
 import { BN } from 'ethereumjs-util'
 import Blockchain from '../src'
 import testnet from './testdata/testnet.json'

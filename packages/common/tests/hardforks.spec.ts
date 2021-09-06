@@ -16,8 +16,8 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
       'istanbul',
       'berlin',
       'london',
-      'shanghai',
-      'merge',
+      // 'shanghai',
+      // 'merge',
     ]
     let c
 
@@ -416,7 +416,71 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
       'should provide the correct initial chain consensus configuration'
     )
 
-    c = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Merge })
+    c = Common.custom(
+      {
+        hardforks: [
+          {
+            name: 'chainstart',
+            block: 0,
+            forkHash: '0xa3f5ab08',
+          },
+          {
+            name: 'homestead',
+            block: 0,
+            forkHash: '0xa3f5ab08',
+          },
+          {
+            name: 'tangerineWhistle',
+            block: 0,
+            forkHash: '0xa3f5ab08',
+          },
+          {
+            name: 'spuriousDragon',
+            block: 0,
+            forkHash: '0xa3f5ab08',
+          },
+          {
+            name: 'byzantium',
+            block: 0,
+            forkHash: '0xa3f5ab08',
+          },
+          {
+            name: 'constantinople',
+            block: 0,
+            forkHash: '0xa3f5ab08',
+          },
+          {
+            name: 'petersburg',
+            block: 0,
+            forkHash: '0xa3f5ab08',
+          },
+          {
+            name: 'istanbul',
+            block: 1561651,
+            forkHash: '0xc25efa5c',
+          },
+          {
+            name: 'berlin',
+            block: 4460644,
+            forkHash: '0x757a1c47',
+          },
+          {
+            name: 'london',
+            block: 5062605,
+            forkHash: '0xb8c6299d',
+          },
+          {
+            name: 'shanghai',
+            block: 5062606,
+          },
+          {
+            name: 'merge',
+            block: 5062607,
+          },
+        ],
+      },
+      { baseChain: 'goerli', hardfork: Hardfork.Merge }
+    )
     st.equal(
       c.consensusType(),
       ConsensusType.ProofOfStake,

@@ -362,7 +362,9 @@ tape('runBlock() -> runtime behavior', async (t) => {
       { common, cliqueSigner: signer.privateKey }
     )
 
+    console.log('begin')
     await vm.runBlock({ block, skipNonce: true, skipBlockValidation: true, generate: true })
+    console.log('end')
     const account = await vm.stateManager.getAccount(signer.address)
     t.ok(
       account.balance.eq(new BN(42000).add(new BN(common.param('pow', 'minerReward')))),

@@ -1,13 +1,84 @@
 import tape from 'tape'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import Common, { Hardfork } from '@gxchain2-ethereumjs/common'
 import { BlockHeader } from '../src/header'
 import { Address, BN, KECCAK256_RLP, KECCAK256_RLP_ARRAY, zeros } from 'ethereumjs-util'
 import { Block } from '../src/block'
 
-const common = new Common({
-  chain: Chain.Mainnet,
-  hardfork: Hardfork.Merge,
-})
+const common = Common.custom(
+  {
+    hardforks: [
+      {
+        name: 'chainstart',
+        block: 0,
+        forkHash: '0xfc64ec04',
+      },
+      {
+        name: 'homestead',
+        block: 1150000,
+        forkHash: '0x97c2c34c',
+      },
+      {
+        name: 'dao',
+        block: 1920000,
+        forkHash: '0x91d1f948',
+      },
+      {
+        name: 'tangerineWhistle',
+        block: 2463000,
+        forkHash: '0x7a64da13',
+      },
+      {
+        name: 'spuriousDragon',
+        block: 2675000,
+        forkHash: '0x3edd5b10',
+      },
+      {
+        name: 'byzantium',
+        block: 4370000,
+        forkHash: '0xa00bc324',
+      },
+      {
+        name: 'constantinople',
+        block: 7280000,
+        forkHash: '0x668db0af',
+      },
+      {
+        name: 'petersburg',
+        block: 7280000,
+        forkHash: '0x668db0af',
+      },
+      {
+        name: 'istanbul',
+        block: 9069000,
+        forkHash: '0x879d6e30',
+      },
+      {
+        name: 'muirGlacier',
+        block: 9200000,
+        forkHash: '0xe029e991',
+      },
+      {
+        name: 'berlin',
+        block: 12244000,
+        forkHash: '0x0eb440f6',
+      },
+      {
+        name: 'london',
+        block: 12965000,
+        forkHash: '0xb715077d',
+      },
+      {
+        name: 'shanghai',
+        block: 12965001,
+      },
+      {
+        name: 'merge',
+        block: 12965002,
+      },
+    ],
+  },
+  { baseChain: 'mainnet', hardfork: Hardfork.Merge }
+)
 
 function validateMergeHeader(st: tape.Test, header: BlockHeader) {
   st.ok(header.parentHash.equals(zeros(32)), 'parentHash')

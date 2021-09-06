@@ -33,7 +33,7 @@
     "lint": "../../config/cli/lint.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
     "tape": "tape -r ts-node/register",
-    "test": "npm run test:node && npm run test:browser",
+    "test": "npm run test:node",
     "test:node": "npm run tape -- ./tests/*.spec.ts",
     "test:browser": "karma start karma.conf.js",
     "docs:build": "typedoc --options typedoc.js"
