@@ -9,7 +9,7 @@ import Bloom from './bloom'
 import { StateManager } from './state'
 import { short } from './evm/opcodes'
 import { Capability, TypedTransaction, FeeMarketEIP1559Transaction } from '@gxchain2-ethereumjs/tx'
-import type { RunTxResult } from './runTx'
+import type { RunTxResult, RunTxOpts } from './runTx'
 import type { TxReceipt, IDebug } from './types'
 import { InterpreterStep } from './evm/interpreter'
 import * as DAOConfig from './config/dao_fork_accounts_config.json'
@@ -55,14 +55,6 @@ export interface RunBlockOpts {
    */
   skipBlockValidation?: boolean
   /**
-   * If true, skips the nonce check
-   */
-  skipNonce?: boolean
-  /**
-   * If true, skips the balance check
-   */
-  skipBalance?: boolean
-  /**
    * Debug callback
    */
   debug?: IDebug
@@ -73,7 +65,7 @@ export interface RunBlockOpts {
   /**
    * Reward callback
    */
-  rewardAddress?: (stateManager: StateManager, value: BN) => Promise<void>
+  assignBlockReward?: (stateManager: StateManager, value: BN) => Promise<void>
   /**
    * Generate receipt root callback
    */
@@ -85,6 +77,10 @@ export interface RunBlockOpts {
     stateManager: StateManager,
     result: PromisResultType<ReturnType<typeof applyBlock>>
   ) => Promise<void>
+  /**
+   * Run tx options
+   */
+  runTxOpts?: Omit<RunTxOpts, 'tx' | 'block' | 'blockGasUsed'>
 }
 
 /**
@@ -396,18 +392,13 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
       this.on('step', handler)
     }
 
-    // Run the tx through the VM
-    const { skipBalance, skipNonce } = opts
-
     let txRes: undefined | RunTxResult
     try {
       txRes = await this.runTx({
+        ...opts.runTxOpts,
         tx,
         block,
-        skipBalance,
-        skipNonce,
         blockGasUsed: gasUsed,
-        rewardAddress: opts.rewardAddress,
       })
       txResults.push(txRes)
     } catch (err) {
@@ -483,8 +474,8 @@ async function assignBlockRewards(this: VM, block: Block, opts: RunBlockOpts): P
   }
   // Reward miner
   const reward = calculateMinerReward(minerReward, ommers.length)
-  if (opts.rewardAddress) {
-    await opts.rewardAddress(state, reward)
+  if (opts.assignBlockReward) {
+    await opts.assignBlockReward(state, reward)
   } else {
     if (this._common.consensusType() === ConsensusType.ProofOfWork) {
       await rewardAccount(state, block.header.coinbase, reward)

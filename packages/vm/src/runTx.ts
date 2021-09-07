@@ -76,9 +76,19 @@ export interface RunTxOpts {
   blockGasUsed?: BN
 
   /**
-   * Reward callback
+   * Before tx callback
    */
-  rewardAddress?: (stateManager: StateManager, value: BN) => Promise<void>
+  beforeTx?: (stateManager: StateManager, tx: TypedTransaction, txCost: BN) => Promise<void>
+
+  /**
+   * After tx callback;
+   */
+  afterTx?: (stateManager: StateManager, tx: TypedTransaction, actualTxCost: BN) => Promise<void>
+
+  /**
+   * Assign tx reward to miner callback
+   */
+  assignTxReward?: (stateManager: StateManager, value: BN) => Promise<void>
 }
 
 /**
@@ -326,15 +336,19 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     }
   }
 
-  // Update from account's nonce and balance
-  fromAccount.nonce.iaddn(1)
   const txCost = tx.gasLimit.mul(gasPrice)
-  fromAccount.balance.isub(txCost)
-  await state.putAccount(caller, fromAccount)
-  if (this.DEBUG) {
-    debug(
-      `Update fromAccount (caller) nonce (-> ${fromAccount.nonce}) and balance(-> ${fromAccount.balance})`
-    )
+  if (opts.beforeTx) {
+    await opts.beforeTx(state, tx, txCost)
+  } else {
+    // Update from account's nonce and balance
+    fromAccount.nonce.iaddn(1)
+    fromAccount.balance.isub(txCost)
+    await state.putAccount(caller, fromAccount)
+    if (this.DEBUG) {
+      debug(
+        `Update fromAccount (caller) nonce (-> ${fromAccount.nonce}) and balance(-> ${fromAccount.balance})`
+      )
+    }
   }
 
   /*
@@ -406,23 +420,27 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
   results.amountSpent = results.gasUsed.mul(gasPrice)
 
-  // Update sender's balance
-  fromAccount = await state.getAccount(caller)
   const actualTxCost = results.gasUsed.mul(gasPrice)
-  const txCostDiff = txCost.sub(actualTxCost)
-  fromAccount.balance.iadd(txCostDiff)
-  await state.putAccount(caller, fromAccount)
-  if (this.DEBUG) {
-    debug(
-      `Refunded txCostDiff (${txCostDiff}) to fromAccount (caller) balance (-> ${fromAccount.balance})`
-    )
+  if (opts.afterTx) {
+    await opts.afterTx(state, tx, actualTxCost)
+  } else {
+    // Update sender's balance
+    fromAccount = await state.getAccount(caller)
+    const txCostDiff = txCost.sub(actualTxCost)
+    fromAccount.balance.iadd(txCostDiff)
+    await state.putAccount(caller, fromAccount)
+    if (this.DEBUG) {
+      debug(
+        `Refunded txCostDiff (${txCostDiff}) to fromAccount (caller) balance (-> ${fromAccount.balance})`
+      )
+    }
   }
 
   const reward = this._common.isActivatedEIP(1559)
     ? results.gasUsed.mul(<BN>inclusionFeePerGas)
     : results.amountSpent
-  if (opts.rewardAddress) {
-    await opts.rewardAddress(state, reward)
+  if (opts.assignTxReward) {
+    await opts.assignTxReward(state, reward)
   } else {
     // Update miner's balance
     let miner

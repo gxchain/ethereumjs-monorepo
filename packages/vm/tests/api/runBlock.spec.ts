@@ -363,7 +363,12 @@ tape('runBlock() -> runtime behavior', async (t) => {
     )
 
     console.log('begin')
-    await vm.runBlock({ block, skipNonce: true, skipBlockValidation: true, generate: true })
+    await vm.runBlock({
+      block,
+      skipBlockValidation: true,
+      runTxOpts: { skipNonce: true },
+      generate: true,
+    })
     console.log('end')
     const account = await vm.stateManager.getAccount(signer.address)
     t.ok(
