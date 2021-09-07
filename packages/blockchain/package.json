@@ -1,6 +1,6 @@
 {
   "name": "@gxchain2-ethereumjs/blockchain",
-  "version": "5.4.2",
+  "version": "5.4.3",
   "description": "A module to store and interact with blocks",
   "license": "MPL-2.0",
   "keywords": [
