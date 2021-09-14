@@ -89,6 +89,16 @@ export interface RunTxOpts {
    * Assign tx reward to miner callback
    */
   assignTxReward?: (stateManager: StateManager, value: BN) => Promise<void>
+
+  /**
+   * Generate tx receipt callback
+   */
+  generateTxReceipt?: (
+    this: VM,
+    tx: TypedTransaction,
+    txResult: RunTxResult,
+    cumulativeGasUsed: BN
+  ) => Promise<TxReceipt>
 }
 
 /**
@@ -486,7 +496,11 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   // Generate the tx receipt
   const cumulativeGasUsed = (opts.blockGasUsed ?? block.header.gasUsed).add(results.gasUsed)
-  results.receipt = await generateTxReceipt.bind(this)(tx, results, cumulativeGasUsed)
+  results.receipt = await (opts.generateTxReceipt ?? generateTxReceipt).bind(this)(
+    tx,
+    results,
+    cumulativeGasUsed
+  )
 
   /**
    * The `afterTx` event
