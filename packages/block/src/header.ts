@@ -29,6 +29,14 @@ import {
 
 const DEFAULT_GAS_LIMIT = new BN(Buffer.from('ffffffffffffff', 'hex'))
 
+export type HashFunction = (header: BlockHeader) => Buffer
+
+let customHashFunction: undefined | HashFunction
+
+export function setCustomHashFunction(func: HashFunction) {
+  customHashFunction = func
+}
+
 /**
  * An object that represents the block header.
  */
@@ -730,7 +738,7 @@ export class BlockHeader {
    * Returns the hash of the block header.
    */
   hash(): Buffer {
-    return rlphash(this.raw())
+    return customHashFunction ? customHashFunction(this) : rlphash(this.raw())
   }
 
   /**
