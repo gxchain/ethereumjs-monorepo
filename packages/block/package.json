@@ -1,6 +1,6 @@
 {
   "name": "@gxchain2-ethereumjs/block",
-  "version": "3.4.2",
+  "version": "3.4.3",
   "description": "Provides Block serialization and help functions",
   "license": "MPL-2.0",
   "author": "mjbecze (mb@ethdev.com)",
