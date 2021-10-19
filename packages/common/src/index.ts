@@ -65,12 +65,14 @@ export enum ConsensusType {
   ProofOfStake = 'pos',
   ProofOfWork = 'pow',
   ProofOfAuthority = 'poa',
+  DelegatedProofOfStake = 'dpos',
 }
 
 export enum ConsensusAlgorithm {
   Ethash = 'ethash',
   Clique = 'clique',
   Casper = 'casper',
+  Reimint = 'reimint',
 }
 
 interface BaseOpts {
@@ -483,7 +485,7 @@ export default class Common extends EventEmitter {
       }
       if (EIPs[eip].requiredEIPs) {
         // eslint-disable-next-line prettier/prettier
-        (<number[]>EIPs[eip].requiredEIPs).forEach((elem: number) => {
+        ;(<number[]>EIPs[eip].requiredEIPs).forEach((elem: number) => {
           if (!(eips.includes(elem) || this.isActivatedEIP(elem))) {
             throw new Error(`${eip} requires EIP ${elem}, but is not included in the EIP list`)
           }
@@ -1024,9 +1026,16 @@ export default class Common extends EventEmitter {
    */
   consensusType(): string | ConsensusType {
     const hardfork = this.hardfork()
+    const activeHardforkNames: string[] = this.activeHardforks().map(({ name }) => name)
+    const isActive = (name: string) => {
+      return activeHardforkNames.includes(name)
+    }
 
     let value
     for (const hfChanges of HARDFORK_CHANGES) {
+      if (!isActive(hfChanges[0])) {
+        continue
+      }
       if ('consensus' in hfChanges[1]) {
         value = hfChanges[1]['consensus']['type']
       }
@@ -1049,9 +1058,16 @@ export default class Common extends EventEmitter {
    */
   consensusAlgorithm(): string | ConsensusAlgorithm {
     const hardfork = this.hardfork()
+    const activeHardforkNames: string[] = this.activeHardforks().map(({ name }) => name)
+    const isActive = (name: string) => {
+      return activeHardforkNames.includes(name)
+    }
 
     let value
     for (const hfChanges of HARDFORK_CHANGES) {
+      if (!isActive(hfChanges[0])) {
+        continue
+      }
       if ('consensus' in hfChanges[1]) {
         value = hfChanges[1]['consensus']['algorithm']
       }
@@ -1079,9 +1095,16 @@ export default class Common extends EventEmitter {
    */
   consensusConfig(): any {
     const hardfork = this.hardfork()
+    const activeHardforkNames: string[] = this.activeHardforks().map(({ name }) => name)
+    const isActive = (name: string) => {
+      return activeHardforkNames.includes(name)
+    }
 
     let value
     for (const hfChanges of HARDFORK_CHANGES) {
+      if (!isActive(hfChanges[0])) {
+        continue
+      }
       if ('consensus' in hfChanges[1]) {
         // The config parameter is named after the respective consensus algorithm
         value = hfChanges[1]['consensus'][hfChanges[1]['consensus']['algorithm']]
