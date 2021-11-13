@@ -1,6 +1,6 @@
 import { debug as createDebugLogger } from 'debug'
 import { Account, Address, BN } from 'ethereumjs-util'
-import { Block } from '@gxchain2-ethereumjs/block'
+import { Block, BlockHeader } from '@gxchain2-ethereumjs/block'
 import Blockchain from '@gxchain2-ethereumjs/blockchain'
 import Common, { ConsensusAlgorithm } from '@gxchain2-ethereumjs/common'
 import { StateManager } from '../state/index'
@@ -69,8 +69,16 @@ export default class EEI {
   _lastReturned: Buffer
   _common: Common
   _gasLeft: BN
+  _getMiner?: (header: BlockHeader) => Address
 
-  constructor(env: Env, state: StateManager, evm: EVM, common: Common, gasLeft: BN) {
+  constructor(
+    env: Env,
+    state: StateManager,
+    evm: EVM,
+    common: Common,
+    gasLeft: BN,
+    _getMiner?: (header: BlockHeader) => Address
+  ) {
     this._env = env
     this._state = state
     this._evm = evm
@@ -82,6 +90,7 @@ export default class EEI {
       returnValue: undefined,
       selfdestruct: {},
     }
+    this._getMiner = _getMiner
   }
 
   /**
@@ -287,16 +296,20 @@ export default class EEI {
    */
   getBlockCoinbase(): BN {
     let coinbase: Address
-    if (this._common.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
-      // Backwards-compatibilty check
-      // TODO: can be removed along VM v5 release
-      if ('cliqueSigner' in this._env.block.header) {
-        coinbase = this._env.block.header.cliqueSigner()
-      } else {
-        coinbase = Address.zero()
-      }
+    if (this._getMiner) {
+      coinbase = this._getMiner(this._env.block.header)
     } else {
-      coinbase = this._env.block.header.coinbase
+      if (this._common.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
+        // Backwards-compatibilty check
+        // TODO: can be removed along VM v5 release
+        if ('cliqueSigner' in this._env.block.header) {
+          coinbase = this._env.block.header.cliqueSigner()
+        } else {
+          coinbase = Address.zero()
+        }
+      } else {
+        coinbase = this._env.block.header.coinbase
+      }
     }
     return new BN(coinbase.toBuffer())
   }

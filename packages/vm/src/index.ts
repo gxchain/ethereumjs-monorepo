@@ -2,6 +2,7 @@ import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import { Account, Address } from 'ethereumjs-util'
 import Blockchain from '@gxchain2-ethereumjs/blockchain'
 import Common, { Chain } from '@gxchain2-ethereumjs/common'
+import { BlockHeader } from '@gxchain2-ethereumjs/block'
 import { StateManager, DefaultStateManager } from './state/index'
 import { default as runCode, RunCodeOpts } from './runCode'
 import { default as runCall, RunCallOpts } from './runCall'
@@ -112,6 +113,11 @@ export interface VMOpts {
    * Default: `false`
    */
   listenHardforkChanged?: boolean
+
+  /**
+   * Get miner address callback
+   */
+  getMiner?: (header: BlockHeader) => Address
 }
 
 /**
@@ -131,6 +137,8 @@ export default class VM extends AsyncEventEmitter {
   readonly blockchain: Blockchain
 
   readonly _common: Common
+
+  readonly _getMiner?: (header: BlockHeader) => Address
 
   protected readonly _opts: VMOpts
   protected _isInitialized: boolean = false
@@ -180,6 +188,7 @@ export default class VM extends AsyncEventEmitter {
     super()
 
     this._opts = opts
+    this._getMiner = opts.getMiner
 
     // Throw on chain or hardfork options removed in latest major release
     // to prevent implicit chain setup on a wrong chain

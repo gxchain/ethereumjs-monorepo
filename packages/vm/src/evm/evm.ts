@@ -639,7 +639,14 @@ export default class EVM {
       contract: await this._state.getAccount(message.to || Address.zero()),
       codeAddress: message.codeAddress,
     }
-    const eei = new EEI(env, this._state, this, this._vm._common, message.gasLimit.clone())
+    const eei = new EEI(
+      env,
+      this._state,
+      this,
+      this._vm._common,
+      message.gasLimit.clone(),
+      this._vm._getMiner
+    )
     if (message.selfdestruct) {
       eei._result.selfdestruct = message.selfdestruct
     }
