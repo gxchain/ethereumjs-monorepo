@@ -457,12 +457,16 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     if (this._common.consensusType() === ConsensusType.ProofOfWork) {
       miner = block.header.coinbase
     } else {
-      // Backwards-compatibilty check
-      // TODO: can be removed along VM v6 release
-      if ('cliqueSigner' in block.header) {
-        miner = block.header.cliqueSigner()
+      if (this._getMiner) {
+        miner = this._getMiner(block.header)
       } else {
-        miner = Address.zero()
+        // Backwards-compatibilty check
+        // TODO: can be removed along VM v6 release
+        if ('cliqueSigner' in block.header) {
+          miner = block.header.cliqueSigner()
+        } else {
+          miner = Address.zero()
+        }
       }
     }
     const minerAccount = await state.getAccount(miner)
