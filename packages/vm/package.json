@@ -1,6 +1,6 @@
 {
   "name": "@gxchain2-ethereumjs/vm",
-  "version": "5.5.12",
+  "version": "5.5.13",
   "description": "An Ethereum VM implementation",
   "license": "MPL-2.0",
   "author": "mjbecze <mjbecze@gmail.com>",
