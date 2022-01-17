@@ -6,6 +6,7 @@ import {
   generateAddress,
   generateAddress2,
   KECCAK256_NULL,
+  KECCAK256_RLP,
   MAX_INTEGER,
 } from 'ethereumjs-util'
 import { Block } from '@gxchain2-ethereumjs/block'
@@ -465,8 +466,8 @@ export default class EVM {
     message.data = Buffer.alloc(0)
     message.to = message.contractAddress!
 
-    const exists = await this._state.accountExists(message.to)
     let toAccount = await this._state.getAccount(message.to)
+    const exists = !toAccount.stateRoot.equals(KECCAK256_RLP)
 
     // Check invalid update
     if (exists && toAccount.codeHash.equals(KECCAK256_NULL)) {
@@ -480,8 +481,6 @@ export default class EVM {
         },
       }
     }
-
-    await this._state.clearContractStorage(message.to)
 
     if (!exists) {
       const newContractEvent: NewContractEvent = {
@@ -531,91 +530,119 @@ export default class EVM {
       }
     }
 
-    if (this._vm.DEBUG) {
-      debug(`Start bytecode processing...`)
-    }
-    let result = await this.runInterpreter(message)
-
-    // fee for size of the return value
-    let totalGas = result.gasUsed
-    let returnFee = new BN(0)
-    if (!result.exceptionError) {
-      returnFee = new BN(result.returnValue.length).imuln(
-        this._vm._common.param('gasPrices', 'createData')
-      )
-      totalGas = totalGas.add(returnFee)
+    if (!exists) {
       if (this._vm.DEBUG) {
-        debugGas(`Add return value size fee (${returnFee} to gas used (-> ${totalGas}))`)
+        debug(`Start bytecode processing...`)
       }
-    }
+      let result = await this.runInterpreter(message)
 
-    // Check for SpuriousDragon EIP-170 code size limit
-    let allowedCodeSize = true
-    if (
-      this._vm._common.gteHardfork('spuriousDragon') &&
-      result.returnValue.length > this._vm._common.param('vm', 'maxCodeSize')
-    ) {
-      allowedCodeSize = false
-    }
+      // fee for size of the return value
+      let totalGas = result.gasUsed
+      let returnFee = new BN(0)
+      if (!result.exceptionError) {
+        returnFee = new BN(result.returnValue.length).imuln(
+          this._vm._common.param('gasPrices', 'createData')
+        )
+        totalGas = totalGas.add(returnFee)
+        if (this._vm.DEBUG) {
+          debugGas(`Add return value size fee (${returnFee} to gas used (-> ${totalGas}))`)
+        }
+      }
 
-    // If enough gas and allowed code size
-    let CodestoreOOG = false
-    if (
-      totalGas.lte(message.gasLimit) &&
-      (this._vm._allowUnlimitedContractSize || allowedCodeSize)
-    ) {
+      // Check for SpuriousDragon EIP-170 code size limit
+      let allowedCodeSize = true
       if (
-        this._vm._common.isActivatedEIP(3541) &&
-        result.returnValue.slice(0, 1).equals(Buffer.from('EF', 'hex'))
+        this._vm._common.gteHardfork('spuriousDragon') &&
+        result.returnValue.length > this._vm._common.param('vm', 'maxCodeSize')
       ) {
-        result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
+        allowedCodeSize = false
+      }
+
+      // If enough gas and allowed code size
+      let CodestoreOOG = false
+      if (
+        totalGas.lte(message.gasLimit) &&
+        (this._vm._allowUnlimitedContractSize || allowedCodeSize)
+      ) {
+        if (
+          this._vm._common.isActivatedEIP(3541) &&
+          result.returnValue.slice(0, 1).equals(Buffer.from('EF', 'hex'))
+        ) {
+          result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
+        } else {
+          result.gasUsed = totalGas
+        }
       } else {
-        result.gasUsed = totalGas
+        if (this._vm._common.gteHardfork('homestead')) {
+          if (this._vm.DEBUG) {
+            debug(`Not enough gas or code size not allowed (>= Homestead)`)
+          }
+          result = { ...result, ...OOGResult(message.gasLimit) }
+        } else {
+          // we are in Frontier
+          if (this._vm.DEBUG) {
+            debug(`Not enough gas or code size not allowed (Frontier)`)
+          }
+          if (totalGas.sub(returnFee).lte(message.gasLimit)) {
+            // we cannot pay the code deposit fee (but the deposit code actually did run)
+            result = { ...result, ...COOGResult(totalGas.sub(returnFee)) }
+            CodestoreOOG = true
+          } else {
+            result = { ...result, ...OOGResult(message.gasLimit) }
+          }
+        }
+      }
+
+      // Save code if a new contract was created
+      if (!result.exceptionError && result.returnValue && result.returnValue.toString() !== '') {
+        await this._state.putContractCode(message.to, result.returnValue)
+        if (this._vm.DEBUG) {
+          debug(`Code saved on new contract creation`)
+        }
+      } else if (CodestoreOOG) {
+        // This only happens at Frontier. But, let's do a sanity check;
+        if (!this._vm._common.gteHardfork('homestead')) {
+          // Pre-Homestead behavior; put an empty contract.
+          // This contract would be considered "DEAD" in later hard forks.
+          // It is thus an unecessary default item, which we have to save to dik
+          // It does change the state root, but it only wastes storage.
+          //await this._state.putContractCode(message.to, result.returnValue)
+          const account = await this._state.getAccount(message.to)
+          await this._state.putAccount(message.to, account)
+        }
+      }
+
+      return {
+        gasUsed: result.gasUsed,
+        createdAddress: message.to,
+        execResult: result,
       }
     } else {
-      if (this._vm._common.gteHardfork('homestead')) {
-        if (this._vm.DEBUG) {
-          debug(`Not enough gas or code size not allowed (>= Homestead)`)
-        }
-        result = { ...result, ...OOGResult(message.gasLimit) }
-      } else {
-        // we are in Frontier
-        if (this._vm.DEBUG) {
-          debug(`Not enough gas or code size not allowed (Frontier)`)
-        }
-        if (totalGas.sub(returnFee).lte(message.gasLimit)) {
-          // we cannot pay the code deposit fee (but the deposit code actually did run)
-          result = { ...result, ...COOGResult(totalGas.sub(returnFee)) }
-          CodestoreOOG = true
-        } else {
-          result = { ...result, ...OOGResult(message.gasLimit) }
+      // Check for SpuriousDragon EIP-170 code size limit
+      if (
+        this._vm._common.gteHardfork('spuriousDragon') &&
+        message.code.length > this._vm._common.param('vm', 'maxCodeSize')
+      ) {
+        return {
+          ...OOGResult(message.gasLimit),
+          execResult: {
+            gasUsed: new BN(0),
+            returnValue: Buffer.alloc(0),
+          },
         }
       }
-    }
 
-    // Save code if a new contract was created
-    if (!result.exceptionError && result.returnValue && result.returnValue.toString() !== '') {
-      await this._state.putContractCode(message.to, result.returnValue)
-      if (this._vm.DEBUG) {
-        debug(`Code saved on new contract creation`)
-      }
-    } else if (CodestoreOOG) {
-      // This only happens at Frontier. But, let's do a sanity check;
-      if (!this._vm._common.gteHardfork('homestead')) {
-        // Pre-Homestead behavior; put an empty contract.
-        // This contract would be considered "DEAD" in later hard forks.
-        // It is thus an unecessary default item, which we have to save to dik
-        // It does change the state root, but it only wastes storage.
-        //await this._state.putContractCode(message.to, result.returnValue)
-        const account = await this._state.getAccount(message.to)
-        await this._state.putAccount(message.to, account)
-      }
-    }
+      // update code hash
+      await this._state.putContractCode(message.to, message.code)
 
-    return {
-      gasUsed: result.gasUsed,
-      createdAddress: message.to,
-      execResult: result,
+      return {
+        gasUsed: new BN(0),
+        createdAddress: message.to,
+        execResult: {
+          gasUsed: new BN(0),
+          returnValue: Buffer.alloc(0),
+        },
+      }
     }
   }
 
