@@ -152,12 +152,26 @@ function getPrecompile(address: Address, common: Common): PrecompileFunc {
       (availability.type == PrecompileAvailabilityCheck.Hardfork &&
         common.gteHardfork(availability.param)) ||
       (availability.type == PrecompileAvailabilityCheck.EIP &&
-        common.eips().includes(availability.param))
+        common.isActivatedEIP(availability.param))
     ) {
       return precompiles[addr]
     }
   }
   return precompiles['']
+}
+
+function addPrecompile(
+  address: Address,
+  func: PrecompileFunc,
+  checkType: PrecompileAvailabilityCheckType
+) {
+  const addr = address.buf.toString('hex')
+  if (precompiles[addr] || precompileAvailability[addr]) {
+    throw new Error('addr already exists')
+  }
+
+  precompiles[addr] = func
+  precompileAvailability[addr] = checkType
 }
 
 function getActivePrecompiles(common: Common): Address[] {
@@ -174,8 +188,10 @@ function getActivePrecompiles(common: Common): Address[] {
 export {
   precompiles,
   getPrecompile,
+  addPrecompile,
   PrecompileFunc,
   PrecompileInput,
+  PrecompileAvailabilityCheckType,
   ripemdPrecompileAddress,
   getActivePrecompiles,
 }
