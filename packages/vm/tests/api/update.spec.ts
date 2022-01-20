@@ -106,7 +106,7 @@ tape('evm.executeUpdate()', async (t) => {
     const {
       execResult: { returnValue },
     } = await evm.executeMessage(message)
-    t.ok(new BN(returnValue).eqn(0), 'get value should be equal')
+    t.ok(new BN(returnValue).eqn(1), 'get value should be equal')
     t.end()
   })
 
